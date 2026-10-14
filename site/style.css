@@ -1,0 +1,31 @@
+:root{--bg:#fafaf9;--fg:#1c1917;--muted:#78716c;--card:#fff;--line:#e7e5e4;--accent:#2563eb;--code:#f5f5f4}
+@media(prefers-color-scheme:dark){:root{--bg:#0c0a09;--fg:#f5f5f4;--muted:#a8a29e;--card:#1c1917;--line:#292524;--accent:#60a5fa;--code:#1c1917}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:var(--accent)}
+.top{border-bottom:1px solid var(--line);padding:14px 16px}
+.brand{font-weight:700;color:var(--fg);text-decoration:none}
+main{max-width:960px;margin:0 auto;padding:24px 16px 64px}
+h1{margin:.2em 0 .3em}
+.lead{color:var(--muted);margin-top:0}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-top:24px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card h2{margin:0 0 6px;font-size:1.1rem}
+.card p{margin:0 0 12px;color:var(--muted);font-size:.92rem}
+.tag,.badge{display:inline-block;font-size:.75rem;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);margin:0 6px 4px 0}
+.badge{color:var(--accent);border-color:var(--accent)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:20px 0}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 16px;font:inherit;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--fg);border-color:var(--accent)}
+.demo{min-height:320px;border:1px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:24px}
+.doc{overflow-wrap:anywhere}
+.doc img{max-width:100%}
+.doc pre,.doc code{background:var(--code);border-radius:6px}
+.doc code{padding:2px 5px}
+.doc pre{padding:12px;overflow:auto}
+.doc pre code{padding:0}
+.doc blockquote{margin-left:0;padding-left:14px;border-left:3px solid var(--line);color:var(--muted)}
+.doc table{border-collapse:collapse}
+.doc th,.doc td{border:1px solid var(--line);padding:6px 10px}
+.back{text-decoration:none;color:var(--muted);font-size:.9rem}
