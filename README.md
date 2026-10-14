@@ -1,6 +1,6 @@
 # Simulation Projects
 
-Interactive showcase of algorithms and simulations. The `site/` folder is only the UI; each project lives in `projects/<id>/` and is built with whatever tool suits it.
+Interactive showcase of algorithms and simulations. The `site/` folder is only the UI; each project lives in `projects/<name>/` and is built with whatever tool suits it.
 
 ## Run locally
 
@@ -13,7 +13,7 @@ python3 -m http.server 8000
 
 ## Add a project
 
-1. Copy `projects/_template/` to `projects/<id>/` and write its `README.md` (shown in the **Docs** tab).
+1. Copy `projects/_template/` to `projects/<name>/` and write its `README.md` (shown in the **Docs** tab).
 2. Add an entry to `site/projects.json`. Set `demo` to a JS module path exporting `mount(el)` when a demo exists; leave `null` for a placeholder.
 
 ## Deploy
