@@ -3,7 +3,21 @@
     "id": "conways-game-of-life",
     "title": "Conway's Game of Life",
     "summary": "A cellular automaton where simple rules on a grid produce surprisingly complex behavior.",
-    "tags": ["cellular automaton", "emergence"],
+    "tags": [
+      "cellular automaton",
+      "emergence"
+    ],
+    "status": "planned",
+    "demo": null
+  },
+  {
+    "id": "fourier-epicycles",
+    "title": "Fourier Epicycles",
+    "summary": "Rotating circles that add up to redraw any shape, using the Fourier transform.",
+    "tags": [
+      "fourier transform",
+      "signal processing"
+    ],
     "status": "planned",
     "demo": null
   }
