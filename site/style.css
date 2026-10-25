@@ -155,6 +155,8 @@ main.project{max-width:none;padding:16px 24px;display:flex;flex-direction:column
 .doc{overflow-wrap:anywhere}
 .doc img{max-width:100%}
 .doc pre,.doc code{background:var(--code);border-radius:6px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.88em}
+/* Show <= and != as typed, not as ligature symbols, so beginners copy the right characters. */
+.doc code{font-variant-ligatures:none}
 .doc code{padding:2px 5px}
 .doc pre{padding:12px;overflow:auto}
 .doc pre code{padding:0}

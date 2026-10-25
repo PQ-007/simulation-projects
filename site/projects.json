@@ -60,5 +60,70 @@
     "status": "live",
     "demo": "../projects/boids/demo.js",
     "thumb": "../projects/boids/thumb.svg"
+  },
+  {
+    "id": "perlin-noise",
+    "title": "Perlin Noise",
+    "summary": "Grid дээрх санамсаргүй gradient-уудаас гөлгөр, хязгааргүй газрын зураг үүсгэ — Minecraft-ийн ертөнц шиг.",
+    "tags": [
+      "procedural generation",
+      "noise",
+      "game dev"
+    ],
+    "status": "live",
+    "demo": "../projects/perlin-noise/demo.js",
+    "thumb": "../projects/perlin-noise/thumb.jpg"
+  },
+  {
+    "id": "ray-casting",
+    "title": "Ray Casting",
+    "summary": "2D газрын зурагт багана бүрт нэг ray шидэж Wolfenstein 3D шиг \"3D\" ертөнц зур.",
+    "tags": [
+      "graphics",
+      "DDA",
+      "game dev"
+    ],
+    "status": "live",
+    "demo": "../projects/ray-casting/demo.js",
+    "thumb": "../projects/ray-casting/thumb.png"
+  },
+  {
+    "id": "noise-visualizer",
+    "title": "Noise Visualizer",
+    "summary": "Микрофон, tone, white/pink/brown noise-ийг waveform, FFT spectrum, spectrogram-аар хар — дуу бол давтамжуудын нийлбэр.",
+    "tags": [
+      "audio",
+      "FFT",
+      "Fourier"
+    ],
+    "status": "live",
+    "demo": "../projects/noise-visualizer/demo.js",
+    "thumb": "../projects/noise-visualizer/thumb.png"
+  },
+  {
+    "id": "compression",
+    "title": "Compression Algorithms",
+    "summary": "RLE, Huffman, LZ77-ийг ижил текст дээр алхам алхмаар харьцуулж, browser-ийн жинхэнэ gzip, entropy-ийн хязгаартай тулга.",
+    "tags": [
+      "compression",
+      "Huffman",
+      "LZ77"
+    ],
+    "status": "live",
+    "demo": "../projects/compression/demo.js",
+    "thumb": "../projects/compression/thumb.png"
+  },
+  {
+    "id": "trie",
+    "title": "Trie",
+    "summary": "Үгсийг үсэг үсгээр нь модонд хадгалж, autocomplete хэрхэн тэр даруй ажилладгийг хар — хайлт үгийн уртаас л хамаарна.",
+    "tags": [
+      "data structure",
+      "autocomplete",
+      "tree"
+    ],
+    "status": "live",
+    "demo": "../projects/trie/demo.js",
+    "thumb": "../projects/trie/thumb.png"
   }
 ]
