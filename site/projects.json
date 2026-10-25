@@ -2,9 +2,23 @@
   {
     "id": "conways-game-of-life",
     "title": "Conway's Game of Life",
-    "summary": "A cellular automaton where simple rules on a grid produce surprisingly complex behavior.",
-    "tags": ["cellular automaton", "emergence"],
-    "status": "planned",
-    "demo": null
+    "summary": "Grid дээрх энгийн дүрмүүдээс гайхалтай нарийн төвөгтэй зан төлөв үүсгэдэг cellular automaton.",
+    "tags": [
+      "cellular automaton",
+      "emergence"
+    ],
+    "status": "live",
+    "demo": "../projects/conways-game-of-life/demo.js"
+  },
+  {
+    "id": "fourier-epicycles",
+    "title": "Fourier Epicycles",
+    "summary": "Дүрс зураад, эргэлдэх тойргууд Fourier transform ашиглан түүнийг хэрхэн дахин зурахыг ажигла.",
+    "tags": [
+      "Fourier",
+      "signal processing"
+    ],
+    "status": "live",
+    "demo": "../projects/fourier-epicycles/demo.js"
   }
 ]

@@ -1,9 +1,9 @@
-# Project name
+# Төслийн нэр
 
-Short description.
+Товч тайлбар.
 
-## Algorithm
+## Алгоритм
 
-## How to run
+## Хэрхэн ажиллуулах
 
-## Results
+## Үр дүн
