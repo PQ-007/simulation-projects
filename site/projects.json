@@ -177,5 +177,19 @@
     "status": "live",
     "demo": "../projects/neural-network/demo.js",
     "thumb": "../projects/neural-network/thumb.png"
+  },
+  {
+    "id": "robot-arm",
+    "title": "Control Theory: Robot Arm",
+    "summary": "3D робот гарын үе бүрийг PID-ээр удирдаж, таталцал, ачаа, савлалтыг өөрийн нүдээр хар. Бөмбөг аваад зөөнө.",
+    "tags": [
+      "control theory",
+      "PID",
+      "robotics",
+      "3D"
+    ],
+    "status": "live",
+    "demo": "../projects/robot-arm/demo.js",
+    "thumb": "../projects/robot-arm/thumb.png"
   }
 ]
