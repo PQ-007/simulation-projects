@@ -125,5 +125,18 @@
     "status": "live",
     "demo": "../projects/trie/demo.js",
     "thumb": "../projects/trie/thumb.png"
+  },
+  {
+    "id": "logic-gates",
+    "title": "Logic Gates & Adder",
+    "summary": "Унтраалгаас gate, gate-ээс нэмэгч: AND, OR, XOR-оор компьютер хэрхэн тоо нэмдгийг товч дарж, утас гэрэлтэхээр нь хар.",
+    "tags": [
+      "logic gates",
+      "binary",
+      "computer architecture"
+    ],
+    "status": "live",
+    "demo": "../projects/logic-gates/demo.js",
+    "thumb": "../projects/logic-gates/thumb.png"
   }
 ]
