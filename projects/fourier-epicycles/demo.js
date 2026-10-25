@@ -53,7 +53,7 @@ const polygon = (n, radius) => Array.from({ length: n }, (_, i) => {
 // Samples a parametric curve over t ∈ [0, turns·2π).
 const curve = (turns, f, n = 4000) => Array.from({ length: n }, (_, i) => f((i / n) * turns * 2 * Math.PI));
 const PRESETS = {
-  'CS Logo': () => imageOutline(new URL('gen1cs-logo.jpg', import.meta.url)),
+  'CS лого': () => imageOutline(new URL('gen1cs-logo.jpg', import.meta.url)),
   'Зүрх': () => curve(1, t => ({ x: 16 * Math.sin(t) ** 3, y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) }), 200),
   'Од': () => polygon(10, i => (i % 2 ? 0.45 : 1)),
   'Дөрвөлжин': () => polygon(4, () => 1).map(p => ({ x: p.x + p.y, y: p.y - p.x })),
@@ -340,7 +340,7 @@ export function mount(root) {
     raf = requestAnimationFrame(frame);
   }
 
-  loadPreset('CS Logo');
+  loadPreset('GEN 1 CS');
   resize();
   raf = requestAnimationFrame(frame);
   // Stop animating once the demo is removed from the page.
