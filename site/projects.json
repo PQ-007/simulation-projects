@@ -138,5 +138,31 @@
     "status": "live",
     "demo": "../projects/logic-gates/demo.js",
     "thumb": "../projects/logic-gates/thumb.png"
+  },
+  {
+    "id": "memory-circuits",
+    "title": "Memory Circuits",
+    "summary": "Gate-ийн гаралтыг оролт руу буцаахад санах ой төрдөг: SR latch, D flip-flop, register, тоолуур.",
+    "tags": [
+      "flip-flop",
+      "memory",
+      "computer architecture"
+    ],
+    "status": "live",
+    "demo": "../projects/memory-circuits/demo.js",
+    "thumb": "../projects/memory-circuits/thumb.png"
+  },
+  {
+    "id": "tiny-cpu",
+    "title": "Tiny CPU",
+    "summary": "Нэмэгч ба санах ойгоос 8-bit CPU: fetch, decode, execute-ийг clock цохилт бүрээр харж, өөрийн програмыг ажиллуул.",
+    "tags": [
+      "CPU",
+      "assembly",
+      "computer architecture"
+    ],
+    "status": "live",
+    "demo": "../projects/tiny-cpu/demo.js",
+    "thumb": "../projects/tiny-cpu/thumb.png"
   }
 ]

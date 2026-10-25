@@ -39,9 +39,9 @@ const ON = '#22c55e', LAMP = '#facc15';
 
 // ---- SVG drawing helpers -------------------------------------------------------------------------------
 // A gate is drawn with its body starting at x, centred on y; inputs at (x, y∓10), output at out(type, x, y).
-const bubble = t => t === 'NOT' || t === 'NAND' || t === 'NOR';
-const outX = (t, x) => x + (t === 'NOT' ? 36 : t === 'AND' || t === 'NAND' ? 46 : 50) + (bubble(t) ? 8 : 0);
-function gateShape(t, x, y, on) {
+export const bubble = t => t === 'NOT' || t === 'NAND' || t === 'NOR';
+export const outX = (t, x) => x + (t === 'NOT' ? 36 : t === 'AND' || t === 'NAND' ? 46 : 50) + (bubble(t) ? 8 : 0);
+export function gateShape(t, x, y, on) {
   const stroke = on ? ON : 'var(--fg)', sw = on ? 2.6 : 1.8, fill = 'var(--card)';
   const and = `M${x},${y - 20} H${x + 26} A20,20 0 0 1 ${x + 26},${y + 20} H${x} Z`;
   const or = `M${x},${y - 20} Q${x + 14},${y} ${x},${y + 20} Q${x + 34},${y + 20} ${x + 50},${y} Q${x + 34},${y - 20} ${x},${y - 20} Z`;
@@ -52,14 +52,14 @@ function gateShape(t, x, y, on) {
   out += `<text x="${x + (t === 'NOT' ? 13 : 22)}" y="${y + 4}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--muted)">${t}</text>`;
   return out;
 }
-const wire = (pts, on, dots = []) =>
+export const wire = (pts, on, dots = []) =>
   `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${on ? ON : 'var(--line)'}" stroke-width="${on ? 4 : 2.5}" stroke-linejoin="round" stroke-linecap="round"/>`
   + dots.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.5" fill="${on ? ON : 'var(--muted)'}"/>`).join('');
-const sw = (id, x, y, v, label) =>
+export const sw = (id, x, y, v, label) =>
   `<g data-toggle="${id}" style="cursor:pointer"><rect x="${x - 18}" y="${y - 16}" width="36" height="32" rx="8" fill="${v ? ON : 'var(--card)'}" stroke="${v ? ON : 'var(--muted)'}" stroke-width="2"/>`
   + `<text x="${x}" y="${y + 1}" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="800" fill="${v ? '#fff' : 'var(--fg)'}">${v}</text>`
   + `<text x="${x - 26}" y="${y + 1}" text-anchor="end" dominant-baseline="central" font-size="15" font-weight="700" fill="var(--fg)">${label}</text></g>`;
-const lamp = (x, y, v, label, sub = '') =>
+export const lamp = (x, y, v, label, sub = '') =>
   `<circle cx="${x}" cy="${y}" r="15" fill="${v ? LAMP : 'var(--code)'}" stroke="${v ? '#ca8a04' : 'var(--muted)'}" stroke-width="2" style="${v ? `filter:drop-shadow(0 0 8px ${LAMP})` : ''}"/>`
   + `<text x="${x}" y="${y + 1}" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="${v ? '#713f12' : 'var(--muted)'}">${v}</text>`
   + `<text x="${x + 24}" y="${y + 1}" dominant-baseline="central" font-size="15" font-weight="700" fill="var(--fg)">${label}</text>`

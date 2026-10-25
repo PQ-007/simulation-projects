@@ -1,0 +1,74 @@
+{
+  "headline": "Ид шид биш — тоо уншиж, нэг жижиг зүйл хийж, дараагийн тоо руу шилждэг",
+  "rule": "Fetch (уншина) → decode (тодорхойлно) → execute (хийнэ) → дахин. Clock цохилт бүр нэг алхам.",
+  "items": [
+    {
+      "title": "Ben Eater — 8-bit компьютер",
+      "tag": "tech",
+      "youtube": "dXdoim96v5A",
+      "more": "9PPrrSyubG0",
+      "image": "thumb.png",
+      "magic": "Хэдэн зуун чип, утсаар хийсэн жинхэнэ 8-bit компьютер — яг энэ demo-гийн бүтэнтэй.",
+      "how": "Ben Eater нь breadboard дээр PC, MAR, RAM, IR, A, B register, ALU (full adder), OUT-ыг утсаар холбож бодит CPU барьсан. Control logic-ийн видео дээр T0…T5 clock алхам бүр яагаад ингэж явагддагийг (яг demo-д харуулсан \"MAR ← PC\", \"IR ← RAM\") тайлбарладаг. Хоёр дахь видеон дээр тэр машиныг програмчилна.",
+      "demo": "Бүх диаграмм: PC, MAR, RAM, IR, A, B, ALU, OUT."
+    },
+    {
+      "title": "CPU хэрхэн ажилладаг вэ",
+      "tag": "science",
+      "youtube": "cNN_tTXABUA",
+      "magic": "Хамгийн олон үзсэн тайлбар: транзистор → gate → ALU → CPU.",
+      "how": "In One Lesson-ы видео CPU-г нэг хоёр минутад gate-ээс эхлээд fetch-decode-execute хүртэл харуулдаг. Demo-ийн **⏩ 1 команд** товч яг нэг л зүйл — fetch, decode, execute-ыг нэг дор.",
+      "demo": "⏩ 1 команд."
+    },
+    {
+      "title": "Fetch – Decode – Execute",
+      "tag": "science",
+      "youtube": "jFDMZpkUWCw",
+      "image": "instruction.png",
+      "magic": "Бүх CPU, утас, супер компьютер — нэг л цикл.",
+      "how": "CPU үүнийг секундэд тэрбум удаа давтана: PC-ийн заасан командыг уншина (fetch), opcode-г тайлна (decode), гүйцэтгэнэ (execute). Бидний команд нэг байт: эхний 4 bit үйлдэл, сүүлийн 4 bit хаяг.",
+      "demo": "CONTROL хайрцагт T0–T5 явц."
+    },
+    {
+      "title": "Crash Course: CPU ба команд",
+      "tag": "science",
+      "youtube": "FZGugFqdr60",
+      "more": "zltgXvg6r3k",
+      "magic": "Реле, хоолны газрын жишээгээр register, ALU, clock-ийг холбож харуулдаг.",
+      "how": "Crash Course Computer Science-ийн 7, 8-р анги яг энэ project-ийн дарааллаар (ALU + register + clock → CPU → команд ба програм) ярьдаг. Мөн бодит CPU-д үр дүн болох олон тусгай хэсгийг (pipeline, cache) дараагийн ангид нэмдэг.",
+      "demo": "Бүх demo."
+    },
+    {
+      "title": "Бодит CPU дотор юу байдаг вэ",
+      "tag": "tech",
+      "youtube": "16zrEPOsIcI",
+      "magic": "Манай 1 байт команд → бодит CPU-ийн мянга мянган транзистор, олон цөм.",
+      "how": "Branch Education-ийн видео орчин үеийн CPU-ийн дотор (cache, олон цөм, зэрэгцээ гүйцэтгэл)-ийг 3D-ээр харуулдаг. Суурь нь манай tiny CPU-тэй адил: register, ALU, clock, fetch-decode-execute — зөвхөн тэрбум дахин олон, нэг цохилтод олон команд.",
+      "demo": "Tiny CPU = энэ бүх зүйлийн жижиг хувилбар."
+    },
+    {
+      "title": "Apollo Guidance Computer",
+      "tag": "science",
+      "youtube": "ULGi3UkgW30",
+      "magic": "1969 онд хүнийг сар руу аваачсан компьютер — хэдэн KB санах ойтой.",
+      "how": "Apollo-гийн заавар зохицуулагч компьютер (AGC) 16 bit-ийн үгтэй, 2048 үгийн RAM-тай байсан — манай tiny CPU-ээс бага зэрэг том. Гэсэн ч яг ижил fetch-decode-execute-ээр ажиллаж, хөлөг онгоцыг сарны гадаргууд буулгасан.",
+      "demo": "16 байт RAM-тай tiny CPU."
+    },
+    {
+      "title": "MOS 6502 — тоглоомын консолуудын зүрх",
+      "tag": "game",
+      "youtube": "acUH4lWe2NQ",
+      "magic": "Apple II, Atari, NES — 8 bit CPU-тай. Манайх бол түүний өвөг дээдэс шиг.",
+      "how": "1975 оны 6502 нь A, X, Y register, 8 bit өгөгдөл, хэдхэн зуун транзистортой байсан. Манай tiny CPU-тэй адил LDA, STA, ADD (ADC), JMP, JC (BCS) команд ашигладаг — зөвхөн илүү олон хаяглалтын горимтой. The 8-Bit Guy түүний түүхийг ярьдаг.",
+      "demo": "LDA, STA, JMP, JC — 6502-ийн ижил нэртэй командууд."
+    },
+    {
+      "title": "NAND-аас компьютер — Nand2Tetris",
+      "tag": "science",
+      "youtube": "L-azf9ecvfo",
+      "magic": "Нэг л төрлийн gate (NAND)-аас бүтэн 16-bit компьютер.",
+      "how": "Nand2Tetris курс NAND gate-аас эхлээд ALU, register, CPU, assembler, хэл, тоглоом хүртэл барьдаг. Энэ видеон дээр хүн хэсгүүдийг breadboard дээр бодитоор угсарсан. Бидний 3 project (Logic Gates → Memory → Tiny CPU) яг энэ замын эхний хэсэг.",
+      "demo": "Logic Gates, Memory Circuits, Tiny CPU гурвын цуврал."
+    }
+  ]
+}
