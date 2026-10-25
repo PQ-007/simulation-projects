@@ -164,5 +164,18 @@
     "status": "live",
     "demo": "../projects/tiny-cpu/demo.js",
     "thumb": "../projects/tiny-cpu/thumb.png"
+  },
+  {
+    "id": "neural-network",
+    "title": "Neural Network Playground",
+    "summary": "Цэг зураад жижиг neural network ангилж сурахыг, хил нь муруйж байгааг шууд хар — ChatGPT-ийн хамгийн жижиг дүү.",
+    "tags": [
+      "machine learning",
+      "backpropagation",
+      "AI"
+    ],
+    "status": "live",
+    "demo": "../projects/neural-network/demo.js",
+    "thumb": "../projects/neural-network/thumb.png"
   }
 ]
