@@ -88,7 +88,7 @@ const PRESETS = {
   'Fax мөр': '□□□□□□□□□□□□■■■■□□□□□□□□□□□□□□□■■■■■■■■■■□□□□□□□□□□□□□□□',
   'Random': null,
 };
-const PALETTE = ['#2563eb', '#16a34a', '#dc2626', '#9333ea', '#ea580c', '#0891b2', '#db2777', '#65a30d', '#7c3aed', '#ca8a04'];
+const PALETTE = ['#22d3ee', '#4ade80', '#fbbf24', '#f472b6', '#fb923c', '#a78bfa', '#fb7185', '#a3e635', '#60a5fa', '#facc15'];
 
 export function mount(root) {
   const h = (tag, props = {}, ...kids) => {
@@ -121,10 +121,10 @@ export function mount(root) {
   }
   input.oninput = () => { clearTimeout(debounce); debounce = setTimeout(() => { hStep = Infinity; colorOf.clear(); render(); }, 150); };
 
-  const card = (...kids) => h('div', { style: 'border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card)' }, ...kids);
+  const card = (...kids) => h('div', { className: 'navy-panel', style: 'border-radius:12px;padding:14px' }, ...kids);
   const note = s => h('p', { style: 'margin:0 0 10px;font-size:.9rem;color:var(--muted);line-height:1.5' }, s);
   const sizeLine = (bits, orig) => h('div', { style: 'margin-top:10px;font-size:.95rem;font-weight:600' },
-    `${bits.toLocaleString()} bit vs ${orig.toLocaleString()} bit → `, h('span', { style: `color:${bits < orig ? '#16a34a' : '#dc2626'}` }, `${Math.round((bits / orig) * 100)}%`));
+    `${bits.toLocaleString()} bit vs ${orig.toLocaleString()} bit → `, h('span', { style: `color:${bits < orig ? '#4ade80' : '#fb7185'}` }, `${Math.round((bits / orig) * 100)}%`));
 
   function renderRle(text, orig) {
     const { runs, bits } = rle(text);
@@ -175,16 +175,16 @@ export function mount(root) {
     forest.forEach(t => { place(t, 0); leaf += 0.6; });
     const W = Math.max(leaf * DX, 200), Hh = depthMax * DY + 56;
     svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
-    svg.setAttribute('style', `width:100%;max-height:${Math.min(520, Hh * 1.4)}px;font-family:Inter,system-ui,sans-serif`);
+    svg.setAttribute('style', `display:block;width:100%;max-height:${Math.min(520, Hh * 1.4)}px;font-family:Inter,system-ui,sans-serif;padding:8px`);
     let out = '';
     const draw = n => {
       if (n.ch !== undefined) {
-        out += `<circle cx="${n._x}" cy="${n._y}" r="${R}" fill="${tint(n.ch)}"/><text x="${n._x}" y="${n._y + 1}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#fff">${esc(show(n.ch))}</text><text x="${n._x}" y="${n._y + R + 11}" text-anchor="middle" font-size="10" fill="var(--muted)">${n.f}</text>`;
+        out += `<circle cx="${n._x}" cy="${n._y}" r="${R}" fill="${tint(n.ch)}"/><text x="${n._x}" y="${n._y + 1}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#10141d">${esc(show(n.ch))}</text><text x="${n._x}" y="${n._y + R + 11}" text-anchor="middle" font-size="10" fill="var(--muted)">${n.f}</text>`;
         return;
       }
       for (const [c, bit] of [[n.left, 0], [n.right, 1]]) {
-        out += `<line x1="${n._x}" y1="${n._y}" x2="${c._x}" y2="${c._y}" stroke="var(--muted)" stroke-width="1.4"/>`;
-        out += `<text x="${(n._x + c._x) / 2 + (bit ? 6 : -6)}" y="${(n._y + c._y) / 2}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent)">${bit}</text>`;
+        out += `<line x1="${n._x}" y1="${n._y}" x2="${c._x}" y2="${c._y}" stroke="var(--muted)" stroke-width="1.6"/>`;
+        out += `<text x="${(n._x + c._x) / 2 + (bit ? 6 : -6)}" y="${(n._y + c._y) / 2}" text-anchor="middle" font-size="10" font-weight="700" fill="#fbbf24">${bit}</text>`;
         draw(c);
       }
       out += `<circle cx="${n._x}" cy="${n._y}" r="${R}" fill="var(--card)" stroke="var(--fg)" stroke-width="1.4"/><text x="${n._x}" y="${n._y + 1}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--fg)">${n.f}</text>`;
@@ -212,7 +212,7 @@ export function mount(root) {
       if (t.ch !== undefined) { list.append(h('span', { textContent: show(t.ch), style: 'padding:2px 5px;margin:1px;border-radius:5px;background:var(--code)' })); return; }
       const col = PALETTE[i % PALETTE.length];
       for (let k = 0; k < t.len; k++) { spans[t.at + k].style.color = col; spans[t.at + k].style.fontWeight = '700'; }
-      const chip = h('span', { textContent: `⟲${t.off},${t.len}`, title: `${t.off} тэмдэгтийн өмнөхөөс ${t.len}-ийг хуулах`, style: `cursor:help;padding:2px 6px;margin:1px;border-radius:5px;color:#fff;background:${col}` });
+      const chip = h('span', { textContent: `⟲${t.off},${t.len}`, title: `${t.off} тэмдэгтийн өмнөхөөс ${t.len}-ийг хуулах`, style: `cursor:help;padding:2px 6px;margin:1px;border-radius:5px;color:#10141d;font-weight:700;background:${col}` });
       chip.onmouseenter = () => mark(t, true); chip.onmouseleave = () => mark(t, false);
       list.append(chip);
     });

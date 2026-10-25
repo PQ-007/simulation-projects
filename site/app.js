@@ -81,7 +81,7 @@ function renderHome() {
 
 // The title link stretches over the whole card; tags sit above it so they stay clickable as filters.
 const card = (p, setTag) => el('article', { class: 'card' },
-  el('div', { class: 'thumb' }, p.thumb ? el('img', { src: p.thumb, alt: '', loading: 'lazy' }) : ''),
+  el('div', { class: 'thumb' }, p.thumb ? el('img', { src: versioned(p.thumb), alt: '', loading: 'lazy' }) : ''),
   el('div', { class: 'card-body' },
     el('h2', {}, el('a', { href: `#/p/${p.id}` }, p.title),
       p.status !== 'live' ? el('span', { class: `badge status-${p.status}` }, STATUS[p.status] || p.status) : ''),
@@ -177,7 +177,7 @@ async function renderDocs(p, panel, file = 'README.md') {
     });
     box.querySelectorAll('pre code').forEach(c => window.hljs?.highlightElement(c));
     // README links/images are relative to the project folder, not the site.
-    box.querySelectorAll('img[src]').forEach(i => { i.src = new URL(i.getAttribute('src'), base); });
+    box.querySelectorAll('img[src]').forEach(i => { i.src = versioned(i.getAttribute('src'), base); });
     // A paragraph holding only an image becomes a figure, captioned by its alt text.
     box.querySelectorAll('p > img:only-child').forEach(img => {
       if (img.parentElement.textContent.trim()) return;
@@ -231,7 +231,7 @@ async function renderReal(p, panel) {
     return;
   }
   const items = data.items || [];
-  const asset = f => new URL(f, base).href;
+  const asset = f => versioned(f, base).href;
   let filter = null;
 
   const grid = el('div', { class: 'rgrid' });

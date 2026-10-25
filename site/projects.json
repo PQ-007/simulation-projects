@@ -21,7 +21,7 @@
     ],
     "status": "live",
     "demo": "../projects/fourier-epicycles/demo.js",
-    "thumb": "../projects/fourier-epicycles/thumb.svg"
+    "thumb": "../projects/fourier-epicycles/thumb.png"
   },
   {
     "id": "state-machine",
@@ -72,7 +72,7 @@
     ],
     "status": "live",
     "demo": "../projects/perlin-noise/demo.js",
-    "thumb": "../projects/perlin-noise/thumb.jpg"
+    "thumb": "../projects/perlin-noise/thumb.png"
   },
   {
     "id": "ray-casting",

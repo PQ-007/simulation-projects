@@ -68,7 +68,7 @@ export function mount(root) {
   const setBtns = Object.keys(SETS).map(k => h('button', { textContent: k, onclick: () => load(k) }));
   seg.append(...setBtns);
   const status = h('div', { style: 'font-size:.9rem;min-height:1.4em' });
-  const svgWrap = h('div', { style: 'flex:1;min-height:240px;overflow:auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line)' });
+  const svgWrap = h('div', { className: 'navy-panel', style: 'flex:1;min-height:240px;overflow:auto;margin:0 14px' });
   const sugg = h('div', { style: 'display:flex;flex-wrap:wrap;gap:6px;align-items:center' });
   const stats = h('div', { style: 'font-size:.82rem;color:var(--muted)' });
   const row = (...kids) => h('div', { style: 'display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center' }, ...kids);
@@ -169,13 +169,13 @@ export function mount(root) {
     let out = '';
     for (const [a, b] of edges) {
       const p = pos.get(a), q = pos.get(b), on = onPath.has(a) && onPath.has(b);
-      out += `<path d="M${p.x},${p.y} C${p.x + DX / 2},${p.y} ${q.x - DX / 2},${q.y} ${q.x},${q.y}" fill="none" stroke="${on ? '#f59e0b' : 'var(--line)'}" stroke-width="${on ? 3.5 : 1.6}"/>`;
+      out += `<path d="M${p.x},${p.y} C${p.x + DX / 2},${p.y} ${q.x - DX / 2},${q.y} ${q.x},${q.y}" fill="none" stroke="${on ? '#fbbf24' : 'var(--line)'}" stroke-width="${on ? 3.5 : 1.8}"/>`;
     }
     for (const [n, p] of pos) {
       const isRoot = n === trie.root, on = onPath.has(n), isNew = fresh.has(n);
-      const fill = n.end ? 'var(--accent)' : 'var(--card)', stroke = isNew ? '#16a34a' : on ? '#f59e0b' : n.end ? 'var(--accent)' : 'var(--muted)';
+      const fill = n.end ? '#4ade80' : 'var(--card)', stroke = isNew ? '#22d3ee' : on ? '#fbbf24' : n.end ? '#4ade80' : 'var(--muted)';
       out += `<circle cx="${p.x}" cy="${p.y}" r="${isRoot ? 8 : R}" fill="${isRoot ? 'var(--fg)' : fill}" stroke="${stroke}" stroke-width="${on || isNew ? 3.5 : 1.5}"/>`;
-      if (!isRoot) out += `<text x="${p.x}" y="${p.y + 0.5}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="${n.end ? '#fff' : 'var(--fg)'}">${esc(p.ch)}</text>`;
+      if (!isRoot) out += `<text x="${p.x}" y="${p.y + 0.5}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="${n.end ? '#10141d' : 'var(--fg)'}">${esc(p.ch)}</text>`;
       if (p.hidden) out += `<text x="${p.x}" y="${p.y + R + 11}" text-anchor="middle" font-size="10" fill="var(--muted)">+${p.hidden} үг</text>`;
     }
     // The missing letter gets its own row above the tree, so it never sits on top of a real branch.
@@ -183,7 +183,7 @@ export function mount(root) {
     if (missing) {
       const p = pos.get(path[path.length - 1]), gx = p.x + DX, gy = Math.min(...[...pos.values()].map(v => v.y)) - DY;
       top = gy - 18;
-      out += `<path d="M${p.x},${p.y} C${p.x + DX / 2},${p.y} ${gx - DX / 2},${gy} ${gx},${gy}" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${gx}" cy="${gy}" r="${R}" fill="var(--card)" stroke="#dc2626" stroke-width="2" stroke-dasharray="3 3"/><text x="${gx}" y="${gy + 0.5}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#dc2626">${esc(missing)}</text><text x="${gx + R + 6}" y="${gy + 0.5}" dominant-baseline="central" font-size="11" fill="#dc2626">байхгүй</text>`;
+      out += `<path d="M${p.x},${p.y} C${p.x + DX / 2},${p.y} ${gx - DX / 2},${gy} ${gx},${gy}" fill="none" stroke="#fb7185" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${gx}" cy="${gy}" r="${R}" fill="var(--card)" stroke="#fb7185" stroke-width="2" stroke-dasharray="3 3"/><text x="${gx}" y="${gy + 0.5}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#fb7185">${esc(missing)}</text><text x="${gx + R + 6}" y="${gy + 0.5}" dominant-baseline="central" font-size="11" fill="#fb7185">байхгүй</text>`;
     }
     svg.setAttribute('viewBox', `-30 ${top} ${W} ${H - 18 - top}`);
     svg.style.height = `${H - 18 - top}px`;
