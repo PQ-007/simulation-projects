@@ -173,7 +173,8 @@ export function mount(root) {
       + `<line x1="${BX}" y1="218" x2="420" y2="218" stroke="${act.has('alu') ? ON : 'var(--line)'}" stroke-width="3"/>`;
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 724 408');
-    svg.setAttribute('style', 'display:block;width:100%;max-width:860px;font-family:Inter,system-ui,sans-serif');
+    // Fills the column in full view, but stays short enough that the log and buttons below remain on screen.
+    svg.setAttribute('style', 'display:block;width:100%;max-height:max(320px,calc(100dvh - 390px));margin-inline:auto;font-family:Inter,system-ui,sans-serif');
     svg.innerHTML = s;
     diagram.replaceChildren(svg);
   }

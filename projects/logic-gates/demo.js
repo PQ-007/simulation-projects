@@ -82,14 +82,19 @@ export function mount(root) {
   const S = { A: 0, B: 1, Cin: 0 };                 // switch states for views 1–3
   let bits = 4, X = 7, Y = 3, rippleStep = Infinity, rippleTimer = 0, slow = true;
 
-  const svgEl = (vb, html, maxW) => {
+  // grow > 1 lets a diagram get bigger than maxW in a wide pane (full view), while staying short enough to fit the screen.
+  const svgEl = (vb, html, maxW, grow = 2) => {
     const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     s.setAttribute('viewBox', vb);
-    s.setAttribute('style', `display:block;width:100%;max-width:${maxW}px;font-family:Inter,system-ui,sans-serif;user-select:none`);
+    s.setAttribute('style', `display:block;width:100%;max-width:${maxW * grow}px;${grow > 1 ? 'max-height:max(240px,calc(100dvh - 330px));margin-inline:auto;' : ''}font-family:Inter,system-ui,sans-serif;user-select:none`);
     s.innerHTML = html;
     s.addEventListener('click', e => { const g = e.target.closest('[data-toggle]'); if (g) { const k = g.dataset.toggle; S[k] = 1 - S[k]; render(); } });
     return s;
   };
+  // Wide pane: diagram with its details beside it. Narrow pane: the details wrap below.
+  const cols = (main, ...side) => h('div', { style: 'display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center' },
+    h('div', { style: 'flex:999 1 520px;min-width:0' }, main),
+    h('div', { style: 'flex:1 1 260px;display:flex;flex-direction:column;gap:16px;align-items:flex-start' }, ...side));
   const note = s => h('p', { style: 'margin:0 0 10px;font-size:.92rem;color:var(--muted);line-height:1.55' }, s);
   // Truth table with the row matching the current inputs highlighted.
   function truth(cols, rows, current) {
@@ -106,7 +111,7 @@ export function mount(root) {
 
   function renderGates() {
     const A = S.A, B = S.B;
-    const top = svgEl('0 0 240 70', sw('A', 60, 35, A, 'A') + sw('B', 170, 35, B, 'B'), 260);
+    const top = svgEl('0 0 240 70', sw('A', 60, 35, A, 'A') + sw('B', 170, 35, B, 'B'), 300, 1);
     const cards = Object.keys(GATES).map(t => {
       const one = t === 'NOT', out = one ? GATES[t](A) : GATES[t](A, B);
       const x = 70, y = 50, ox = outX(t, x);
@@ -116,13 +121,14 @@ export function mount(root) {
         + `<text x="4" y="${y - 6}" font-size="12" font-weight="700" fill="var(--fg)">A</text><text x="4" y="${y + 14}" font-size="12" font-weight="700" fill="var(--fg)">B</text>`;
       s += gateShape(t, x, y, out) + wire([[ox, y], [168, y]], out) + lamp(185, y, out, '');
       const rows = one ? [[0, 1], [1, 0]] : [[0, 0], [0, 1], [1, 0], [1, 1]].map(([a, b]) => [a, b, GATES[t](a, b)]);
-      return h('div', { style: 'border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);display:flex;flex-direction:column;gap:6px;align-items:center' },
+      return h('div', { style: 'border:1px solid var(--line);border-radius:12px;padding:10px 14px 14px;background:var(--card);display:flex;flex-direction:column;gap:6px;align-items:center' },
         h('div', { style: 'font-weight:800;font-size:1.05rem' }, t), h('div', { textContent: RULES[t], style: 'font-size:.82rem;color:var(--muted);text-align:center' }),
-        svgEl('0 0 220 100', s, 240), truth(one ? ['A', 'NOT'] : ['A', 'B', t], rows, one ? [A] : [A, B]));
+        h('div', { style: 'display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:center;width:100%' },
+          h('div', { style: 'flex:1 1 200px;max-width:360px' }, svgEl('0 0 220 100', s, 360, 1)), truth(one ? ['A', 'NOT'] : ['A', 'B', t], rows, one ? [A] : [A, B])));
     });
     body.replaceChildren(
       note('Gate бол жижиг дүрэм: 1 (асаалттай) ба 0 (унтраалттай) оролтоос нэг гаралт гаргана. Дээрх A, B товчийг дарж бүх gate хэрхэн хариулахыг хар. Ногоон утас = 1.'),
-      top, h('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:10px' }, ...cards));
+      top, h('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill,minmax(max(230px,calc((100% - 24px) / 3)),1fr));gap:12px;margin-top:10px' }, ...cards));
   }
 
   function renderHalf() {
@@ -134,8 +140,7 @@ export function mount(root) {
       + sw('A', 40, 70, A, 'A') + sw('B', 40, 170, B, 'B') + lamp(415, 90, sum, 'S', 'нийлбэр (sum)') + lamp(415, 190, carry, 'C', 'дамжуулах (carry)');
     body.replaceChildren(
       note('Хоёр bit-ийг нэмэх: 0+0=0, 0+1=1, 1+0=1, харин 1+1=10 (хоёртын "2"). Баруун цифр (S) нь XOR, зүүн цифр буюу дараагийн багана руу "дамжуулах" (C) нь AND. A, B дээр дарж үз.'),
-      svgEl('-30 0 600 240', s, 660),
-      h('div', { style: 'display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-top:10px' },
+      cols(svgEl('-30 0 600 240', s, 660),
         truth(['A', 'B', 'C', 'S'], [[0, 0, 0, 0], [0, 1, 0, 1], [1, 0, 0, 1], [1, 1, 1, 0]], [A, B]),
         h('div', { style: 'font-size:1.1rem;font-weight:700' }, `${A} + ${B} = `, h('span', { textContent: `${carry}${sum}`, style: 'color:#16a34a;font-family:"JetBrains Mono",monospace' }), h('span', { textContent: ` (хоёртын) = ${A + B}`, style: 'color:var(--muted);font-weight:500' }))));
   }
@@ -157,8 +162,7 @@ export function mount(root) {
     for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) for (let c = 0; c < 2; c++) { const q = fullAdder(a, b, c); rows.push([a, b, c, q.cout, q.sum]); }
     body.replaceChildren(
       note('Олон оронтой тоо нэмэхэд багана бүрт өмнөх баганаас ирсэн "дамжуулалт" (Cᵢₙ) нэмэгдэнэ. Full adder гурван bit нэмнэ: хоёр half adder + OR gate. Cᵢₙ-ийг дарж үз.'),
-      svgEl('-34 0 790 290', s, 820),
-      h('div', { style: 'display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-top:10px' },
+      cols(svgEl('-34 0 790 290', s, 820),
         truth(['A', 'B', 'Cᵢₙ', 'Cₒᵤₜ', 'S'], rows, [A, B, Cin]),
         h('div', { style: 'font-size:1.1rem;font-weight:700' }, `${A} + ${B} + ${Cin} = `, h('span', { textContent: `${r.cout}${r.sum}`, style: 'color:#16a34a;font-family:"JetBrains Mono",monospace' }), h('span', { textContent: ` (хоёртын) = ${A + B + Cin}`, style: 'color:var(--muted);font-weight:500' }))));
   }
@@ -188,7 +192,7 @@ export function mount(root) {
     const xl = colX(bits - 1) - BW / 2 - 6, overflow = step >= bits ? R.carry : 0;
     s += lamp(xl - 6, 140, overflow, '', '') + `<text x="${xl - 6}" y="176" text-anchor="middle" font-size="11" fill="var(--muted)">carry</text>`;
     s += `<text x="${W - 30}" y="30" font-size="15" font-weight="700" fill="var(--fg)">A</text><text x="${W - 30}" y="74" font-size="15" font-weight="700" fill="var(--fg)">B</text><text x="${W - 30}" y="230" font-size="15" font-weight="700" fill="var(--fg)">S</text>`;
-    const svg = svgEl(`0 0 ${W} 260`, s, W * 1.05);
+    const svg = svgEl(`0 0 ${W} 260`, s, W * 1.05, 1.8);
     svg.addEventListener('click', e => {
       const t = e.target.closest('[data-x]');
       if (t) { const k = t.dataset.x, i = +k.slice(1); if (k[0] === 'a') X ^= 1 << i; else Y ^= 1 << i; startRipple(); return; }

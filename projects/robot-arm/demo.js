@@ -137,8 +137,9 @@ export function mount(root) {
     n.append(...kids);
     return n;
   };
-  const view = h('canvas', { style: 'width:100%;aspect-ratio:4/3;max-width:640px;border-radius:12px;cursor:grab;touch-action:none;background:var(--bg)' });
-  const plot = h('canvas', { style: 'width:100%;height:210px;border:1px solid var(--line);border-radius:10px;background:var(--card)' });
+  // 4:3 in a narrow pane; in full view it fills the column but stays on screen (the camera fits either shape).
+  const view = h('canvas', { style: 'width:100%;aspect-ratio:4/3;max-height:max(320px,calc(100dvh - 330px));border-radius:12px;cursor:grab;touch-action:none;background:var(--bg)' });
+  const plot = h('canvas', { style: 'width:100%;height:clamp(210px,calc(100dvh - 600px),340px);border:1px solid var(--line);border-radius:10px;background:var(--card)' });
   const metricsBox = h('div', { style: `font:600 .85rem ${mono};line-height:1.7;min-height:3.4em` });
   const status = h('div', { style: 'font-size:.84rem;line-height:1.5;color:var(--muted);min-height:2.6em' });
   const btn = (text, onclick, title = '') => h('button', { className: 'btn btn-sm', textContent: text, onclick, title });
@@ -161,7 +162,7 @@ export function mount(root) {
   const grav = h('input', { type: 'checkbox', checked: true, onchange: () => { P.gravity = grav.checked; } });
   const slow = h('input', { type: 'checkbox' });
 
-  const left = h('div', { style: 'flex:1 1 440px;min-width:280px;display:flex;flex-direction:column;gap:8px' }, view,
+  const left = h('div', { style: 'flex:2 1 440px;min-width:280px;display:flex;flex-direction:column;gap:8px' }, view,
     row(btn('▶ Pick & place', () => startMission(), 'Бөмбөгийг аваад нөгөө тэмдэг рүү зөөнө'), btn('⌂ Home', () => { mission = null; setTip([0.45, 0.2, 0]); }), btn('↺ Бөмбөг', () => resetBall()),
       h('label', { style: 'display:flex;gap:6px;align-items:center;font-size:.85rem;color:var(--muted)' }, slow, '¼ хурд')),
     status);
@@ -211,7 +212,7 @@ export function mount(root) {
     const css = getComputedStyle(root), c = n => css.getPropertyValue(n).trim();
     const fg = c('--fg') || '#111', muted = c('--muted') || '#888', line = c('--line') || '#ddd', card = c('--card') || '#fff', accent = c('--accent') || '#2563eb';
     const r = view.getBoundingClientRect(), dpr = devicePixelRatio || 1;
-    if (view.width !== Math.round(r.width * dpr)) { view.width = Math.round(r.width * dpr); view.height = Math.round(r.height * dpr); }
+    if (view.width !== Math.round(r.width * dpr) || view.height !== Math.round(r.height * dpr)) { view.width = Math.round(r.width * dpr); view.height = Math.round(r.height * dpr); }
     W = r.width; H = r.height;
     const g = view.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     const cb = camBasis(), P3 = p => proj(cb, p);
@@ -251,7 +252,7 @@ export function mount(root) {
 
   function drawPlot() {
     const r = plot.getBoundingClientRect(), dpr = devicePixelRatio || 1;
-    if (plot.width !== Math.round(r.width * dpr)) { plot.width = Math.round(r.width * dpr); plot.height = Math.round(r.height * dpr); }
+    if (plot.width !== Math.round(r.width * dpr) || plot.height !== Math.round(r.height * dpr)) { plot.width = Math.round(r.width * dpr); plot.height = Math.round(r.height * dpr); }
     const g = plot.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); const w = r.width, hh = r.height;
     g.clearRect(0, 0, w, hh);
     const css = getComputedStyle(root), muted = css.getPropertyValue('--muted').trim() || '#888', fg = css.getPropertyValue('--fg').trim() || '#111';

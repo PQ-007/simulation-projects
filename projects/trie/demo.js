@@ -128,8 +128,10 @@ export function mount(root) {
     for (const w of trie.words('')) sumLetters += [...w].length;
     stats.textContent = `${trie.size} үг · ${sumLetters} үсэг · ${trie.nodes - 1} нүд → эхлэлийг хуваалцсанаар ${sumLetters - (trie.nodes - 1)} үсгийн зай хэмнэв`;
 
-    drawTree(path.slice(0, matched + 1), node, !full ? letters[matched] : null);
+    redraw = () => drawTree(path.slice(0, matched + 1), node, !full ? letters[matched] : null);
+    redraw();
   }
+  let redraw = () => {};
 
   // Draw the trie left to right. Big tries only show the typed path plus the part below it (capped).
   function drawTree(path, focus, missing) {
@@ -165,7 +167,7 @@ export function mount(root) {
     const onPath = new Set(path);
     const W = (maxDepth + 1) * DX + 90, H = Math.max(row, 1) * DY + 20;
     svg.setAttribute('viewBox', `-30 -18 ${W} ${H}`);
-    svg.setAttribute('style', `display:block;width:${Math.max(W, 300)}px;height:${H}px;font-family:Inter,system-ui,sans-serif;margin:8px 14px`);
+    svg.setAttribute('style', 'display:block;font-family:Inter,system-ui,sans-serif;margin:8px auto');
     let out = '';
     for (const [a, b] of edges) {
       const p = pos.get(a), q = pos.get(b), on = onPath.has(a) && onPath.has(b);
@@ -185,14 +187,20 @@ export function mount(root) {
       top = gy - 18;
       out += `<path d="M${p.x},${p.y} C${p.x + DX / 2},${p.y} ${gx - DX / 2},${gy} ${gx},${gy}" fill="none" stroke="#fb7185" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${gx}" cy="${gy}" r="${R}" fill="var(--card)" stroke="#fb7185" stroke-width="2" stroke-dasharray="3 3"/><text x="${gx}" y="${gy + 0.5}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#fb7185">${esc(missing)}</text><text x="${gx + R + 6}" y="${gy + 0.5}" dominant-baseline="central" font-size="11" fill="#fb7185">байхгүй</text>`;
     }
-    svg.setAttribute('viewBox', `-30 ${top} ${W} ${H - 18 - top}`);
-    svg.style.height = `${H - 18 - top}px`;
+    const VH = H - 18 - top;
+    svg.setAttribute('viewBox', `-30 ${top} ${W} ${VH}`);
+    // Small tries are scaled up to fill the panel (e.g. in full view); big ones keep 1:1 and scroll.
+    const k = Math.max(1, Math.min(2.2, (svgWrap.clientWidth - 28) / W, (svgWrap.clientHeight - 16) / VH));
+    Object.assign(svg.style, { width: `${W * k}px`, height: `${VH * k}px` });
     svg.innerHTML = out;
     svgWrap.replaceChildren(svg);
     // Keep the end of the typed path in view.
     const end = pos.get(path[path.length - 1]);
-    if (end) svgWrap.scrollTop = Math.max(0, end.y - svgWrap.clientHeight / 2);
+    if (end) svgWrap.scrollTop = Math.max(0, (end.y - top) * k - svgWrap.clientHeight / 2);
   }
 
   load('Жишээ');
+  const ro = new ResizeObserver(() => redraw());
+  ro.observe(svgWrap);
+  new MutationObserver((_, o) => { if (!root.isConnected) { ro.disconnect(); o.disconnect(); } }).observe(document.body, { childList: true, subtree: true });
 }

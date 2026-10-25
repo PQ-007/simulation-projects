@@ -95,8 +95,8 @@ const VIEWS = [['split', 'Split', '1'], ['demo', 'Demo', '2'], ['docs', 'Docs', 
 // The project currently on screen, so switching views doesn't remount the demo.
 let current = null;
 
-function renderProject(id, view) {
-  if (current?.id === id) return current.setView(view);
+function renderProject(id, view, sec) {
+  if (current?.id === id) { current.setView(view); current.reveal(sec); return; }
   const p = projects.find(x => x.id === id);
   if (!p) return renderNotFound();
   document.title = `${p.title} · ${SITE}`;
@@ -111,6 +111,13 @@ function renderProject(id, view) {
   const divider = el('div', { class: 'divider', role: 'separator', 'aria-orientation': 'vertical', title: 'Чирж хэмжээг өөрчлөх · давхар товшвол тэнцүүлнэ' });
   const layout = el('div', { class: 'layout' }, demo.node, divider, docs.node, real.node);
   const buttons = VIEWS.map(([key, label, k]) => el('button', { role: 'tab', title: `${label} (${k})`, onclick: () => go(key) }, label));
+  // Previous / next project, opened in the same view.
+  const at = projects.indexOf(p);
+  const sibling = (d, arrow) => {
+    const q = projects[(at + d + projects.length) % projects.length];
+    return el('a', { class: 'btn btn-icon', href: `#/p/${q.id}`, title: `${d < 0 ? 'Өмнөх' : 'Дараагийн'}: ${q.title}`, 'aria-label': `${d < 0 ? 'Өмнөх' : 'Дараагийн'}: ${q.title}`,
+      onclick: e => { e.preventDefault(); location.hash = `#/p/${q.id}/${layout.dataset.view}`; } }, arrow);
+  };
 
   const setSplit = pct => { layout.style.setProperty('--split', `${pct}%`); store.set('split', pct); };
   setSplit(+store.get('split') || 50);
@@ -133,16 +140,21 @@ function renderProject(id, view) {
       pn.toggle.title = v === key ? 'Split view руу буцах (Esc)' : 'Зөвхөн үүнийг харуулах';
     }
   };
-  current = { id, setView, go };
   app.className = 'project';
   app.replaceChildren(
     el('div', { class: 'proj-head' },
       el('div', { class: 'proj-title' }, el('h1', {}, p.title), el('p', { class: 'lead' }, p.summary)),
-      el('div', { class: 'seg', role: 'tablist', 'aria-label': 'Харагдац' }, ...buttons)),
+      el('div', { class: 'proj-tools' },
+        el('div', { class: 'seg', role: 'tablist', 'aria-label': 'Харагдац' }, ...buttons),
+        el('div', { class: 'proj-nav' }, sibling(-1, '‹'), sibling(1, '›')))),
     layout);
   setView(view);
   renderDemo(p, demo.body);
-  renderDocs(p, docs.body);
+  const docsReady = renderDocs(p, docs.body);
+  // #/p/<id>/docs/<n> opens the docs at section n.
+  const reveal = sec => { if (sec) docsReady.then(() => document.getElementById(`sec-${sec}`)?.scrollIntoView({ block: 'start' })); };
+  current = { id, setView, go, reveal };
+  reveal(sec);
   renderReal(p, real.body);
 }
 
@@ -166,7 +178,8 @@ async function renderDemo(p, panel) {
 async function renderDocs(p, panel, file = 'README.md') {
   const base = new URL(`../projects/${p.id}/`, location.href);
   const box = el('article', { class: 'doc' }, 'Ачаалж байна…');
-  panel.append(box);
+  const wrap = el('div', { class: 'doc-wrap' }, box);
+  panel.append(wrap);
   try {
     const r = await fetch(versioned(file, base));
     if (!r.ok) throw new Error(file === 'README.md' ? `README.md олдсонгүй (${r.status})` : 'Энэ project-ийн бодит хэрэглээний тайлбар хараахан бичигдээгүй байна.');
@@ -189,9 +202,77 @@ async function renderDocs(p, panel, file = 'README.md') {
       const h = a.getAttribute('href');
       if (!h.startsWith('#') && !/^[a-z]+:/i.test(h)) a.href = new URL(h, base);
     });
+    const toc = buildToc(p, box, panel);
+    if (toc) { wrap.prepend(toc); wrap.classList.add('has-toc'); }
+    box.append(pager(p));
   } catch (e) {
     box.textContent = e.message;
   }
+}
+
+// Table of contents from the README's h2/h3. Each heading gets a deep link (#/p/<id>/docs/<n>);
+// a plain click only scrolls the docs pane, so the current view (split or docs) stays as it is.
+let tocListeners = null;
+function buildToc(p, box, panel) {
+  const heads = [...box.querySelectorAll('h2, h3')];
+  if (heads.length < 3) return null;
+  // Window listeners belong to the docs on screen; drop the previous project's.
+  tocListeners?.abort();
+  tocListeners = new AbortController();
+  const { signal } = tocListeners;
+  // Heading text without KaTeX's hidden MathML copy.
+  const texts = heads.map(hd => { const c = hd.cloneNode(true); c.querySelectorAll('.katex-mathml').forEach(m => m.remove()); return c.textContent.trim(); });
+  const nav = el('nav', { class: 'toc', 'aria-label': 'Агуулга' });
+  const current = el('span', { class: 'toc-current' });
+  const toggle = el('button', { class: 'toc-toggle', 'aria-expanded': 'false', onclick: () => setOpen(!nav.classList.contains('expanded')) },
+    el('span', { class: 'toc-title' }, 'Агуулга'), current, el('span', { class: 'toc-caret', 'aria-hidden': 'true' }, '▾'));
+  const setOpen = on => { nav.classList.toggle('expanded', on); toggle.setAttribute('aria-expanded', String(on)); };
+  const links = heads.map((hd, i) => {
+    const text = texts[i], href = `#/p/${p.id}/docs/${i + 1}`;
+    hd.id = `sec-${i + 1}`;
+    hd.append(el('a', { class: 'h-anchor', href, title: 'Холбоосыг хуулах', 'aria-label': `"${text}" хэсгийн холбоосыг хуулах`, onclick: e => copyLink(e, href) }, '#'));
+    return el('a', { href, class: `toc-${hd.tagName.toLowerCase()}`, onclick: e => {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;
+      e.preventDefault(); setOpen(false);
+      hd.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } }, text);
+  });
+  nav.append(toggle, el('ol', { class: 'toc-list' }, ...links.map(a => el('li', {}, a))));
+  addEventListener('click', e => { if (!nav.contains(e.target)) setOpen(false); }, { signal });
+
+  // The active section is the last heading above a line near the top of the pane.
+  let ticking = false;
+  const spy = () => {
+    ticking = false;
+    const line = Math.max(panel.getBoundingClientRect().top, 0) + 90;
+    let i = 0;
+    heads.forEach((hd, k) => { if (hd.getBoundingClientRect().top <= line) i = k; });
+    links.forEach((a, k) => a.toggleAttribute('aria-current', k === i));
+    current.textContent = texts[i];
+  };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(spy); } };
+  panel.addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('scroll', onScroll, { passive: true, signal });
+  spy();
+  return nav;
+}
+
+function copyLink(e, href) {
+  e.preventDefault();
+  const a = e.currentTarget;
+  navigator.clipboard?.writeText(new URL(href, location.href).href).then(() => {
+    a.classList.add('copied');
+    setTimeout(() => a.classList.remove('copied'), 1400);
+  }, () => { location.hash = href; });
+}
+
+// "Previous / next project" links at the end of the docs.
+function pager(p) {
+  const at = projects.indexOf(p), n = projects.length;
+  const link = (q, dir) => el('a', { class: `pager-${dir}`, href: `#/p/${q.id}`, onclick: e => {
+    e.preventDefault(); location.hash = `#/p/${q.id}/${document.querySelector('.layout')?.dataset.view || 'split'}`;
+  } }, el('span', {}, dir === 'prev' ? '← Өмнөх' : 'Дараагийн →'), el('b', {}, q.title));
+  return el('nav', { class: 'pager', 'aria-label': 'Бусад project' }, link(projects[(at - 1 + n) % n], 'prev'), link(projects[(at + 1) % n], 'next'));
 }
 
 // Real world: a gallery of things built on the project's algorithm, from <project>/real.json.
@@ -338,8 +419,8 @@ addEventListener('keydown', e => {
 });
 
 function route() {
-  const [, kind, id, view] = location.hash.split('/');
-  if (kind === 'p' && id) return renderProject(id, VIEWS.some(([k]) => k === view) ? view : 'split');
+  const [, kind, id, view, sec] = location.hash.split('/');
+  if (kind === 'p' && id) return renderProject(id, VIEWS.some(([k]) => k === view) ? view : 'split', sec);
   current = null;
   renderHome();
 }

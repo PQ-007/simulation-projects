@@ -83,8 +83,9 @@ export function mount(root) {
     return n;
   };
   const mono = '"JetBrains Mono",ui-monospace,monospace';
-  const field = h('canvas', { style: 'width:100%;aspect-ratio:1;max-width:520px;border-radius:10px;cursor:crosshair;touch-action:none;image-rendering:auto' });
-  const diagram = h('canvas', { style: 'width:100%;height:260px;border:1px solid var(--line);border-radius:10px;background:var(--card)' });
+  // Square; in full view as big as the screen height allows.
+  const field = h('canvas', { style: 'width:min(100%,max(300px,calc(100dvh - 290px)));aspect-ratio:1;border-radius:10px;cursor:crosshair;touch-action:none;image-rendering:auto' });
+  const diagram = h('canvas', { style: 'width:100%;height:clamp(260px,calc(100dvh - 590px),440px);border:1px solid var(--line);border-radius:10px;background:var(--card)' });
   const lossCv = h('canvas', { style: 'width:100%;height:84px;border:1px solid var(--line);border-radius:10px;background:var(--card)' });
   const stats = h('div', { style: `font:700 .95rem ${mono};line-height:1.6` });
   const msg = h('div', { style: 'font-size:.82rem;color:var(--muted);line-height:1.5' });
@@ -219,5 +220,8 @@ export function mount(root) {
   data = DATASETS[dsName](Math.random);
   hidden = [4, 3];
   build(); raf = requestAnimationFrame(frame);
-  new MutationObserver((_, o) => { if (!root.isConnected) { cancelAnimationFrame(raf); o.disconnect(); } }).observe(document.body, { childList: true, subtree: true });
+  // Redraw when the pane changes size (split ↔ full view) even while training is paused.
+  const ro = new ResizeObserver(() => render());
+  ro.observe(field); ro.observe(diagram);
+  new MutationObserver((_, o) => { if (!root.isConnected) { cancelAnimationFrame(raf); ro.disconnect(); o.disconnect(); } }).observe(document.body, { childList: true, subtree: true });
 }

@@ -175,7 +175,7 @@ export function mount(root) {
     forest.forEach(t => { place(t, 0); leaf += 0.6; });
     const W = Math.max(leaf * DX, 200), Hh = depthMax * DY + 56;
     svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
-    svg.setAttribute('style', `display:block;width:100%;max-height:${Math.min(520, Hh * 1.4)}px;font-family:Inter,system-ui,sans-serif;padding:8px`);
+    svg.setAttribute('style', `display:block;width:100%;max-height:max(${Math.min(520, Hh * 1.4)}px,min(${Hh * 1.9}px,calc(100dvh - 590px)));font-family:Inter,system-ui,sans-serif;padding:8px`);
     let out = '';
     const draw = n => {
       if (n.ch !== undefined) {

@@ -62,14 +62,19 @@ export function mount(root) {
 
   // Notes are my own constant strings; **text** becomes bold.
   const note = s => h('p', { style: 'margin:0 0 10px;font-size:.92rem;color:var(--muted);line-height:1.55', innerHTML: s.replace(/\*\*(.+?)\*\*/g, '<b style="color:var(--fg)">$1</b>') });
-  const svgEl = (vb, html, maxW) => {
+  // grow > 1 lets a diagram get bigger than maxW in a wide pane (full view), while staying short enough to fit the screen.
+  const svgEl = (vb, html, maxW, grow = 2) => {
     const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     s.setAttribute('viewBox', vb);
-    s.setAttribute('style', `display:block;width:100%;max-width:${maxW}px;font-family:Inter,system-ui,sans-serif;user-select:none`);
+    s.setAttribute('style', `display:block;width:100%;max-width:${maxW * grow}px;${grow > 1 ? 'max-height:max(240px,calc(100dvh - 480px));margin-inline:auto;' : ''}font-family:Inter,system-ui,sans-serif;user-select:none`);
     s.innerHTML = html;
     s.addEventListener('click', e => { const g = e.target.closest('[data-toggle]'); if (g) toggle(g.dataset.toggle); });
     return s;
   };
+  // Wide pane: diagram with its controls beside it. Narrow pane: the controls wrap below.
+  const cols = (main, ...side) => h('div', { style: 'display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center' },
+    h('div', { style: 'flex:999 1 520px;min-width:0' }, main),
+    h('div', { style: 'flex:1 1 280px;display:flex;flex-direction:column;gap:12px;align-items:flex-start' }, ...side));
   const btn = (text, onclick) => h('button', { className: 'btn btn-sm', textContent: text, onclick });
   // Record the state after every input change, for the timing diagrams.
   const snap = () => { hist.push({ ...S, ...Object.fromEntries(Object.keys(v).map(k => [k, v[k]])) }); if (hist.length > 40) hist.shift(); };
@@ -116,7 +121,7 @@ export function mount(root) {
       s += `<path d="${d}" fill="none" stroke="${label === 'CLK' ? '#3b82f6' : '#16a34a'}" stroke-width="2.4" stroke-linejoin="round"/>`;
     });
     return h('div', { style: 'margin-top:10px;overflow-x:auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--card)' },
-      h('div', { textContent: title, style: 'font-size:.8rem;color:var(--muted)' }), svgEl(`0 0 ${W} ${rows.length * rh + 14}`, s, W));
+      h('div', { textContent: title, style: 'font-size:.8rem;color:var(--muted)' }), svgEl(`0 0 ${W} ${rows.length * rh + 14}`, s, W, 1));
   }
 
   // ---- 1. SR latch ----
@@ -136,12 +141,12 @@ export function mount(root) {
       : s ? ['S = 1 → SET: Q = 1 болно', 'var(--fg)'] : r ? ['R = 1 → RESET: Q = 0 болно', 'var(--fg)'] : [`S = R = 0 → ХАДГАЛНА: Q = ${Q} хэвээр үлдэнэ`, '#16a34a'];
     body.replaceChildren(
       note('Хоёр NOR gate гаралтаа бие биеийнхээ оролт руу холбосон: Q → доод gate, Q̅ → дээд gate. Энэ **гогцоо** нь утгыг "түгжиж" санадаг. Туршаад үз: S-ийг 1 болгоод буцааж 0 болго — Q 1 хэвээр үлдэнэ!'),
-      svgEl('0 0 560 260', svg, 640),
-      h('div', { textContent: msg[0], style: `margin-top:8px;font-weight:700;color:${msg[1]}` }),
-      h('table', { style: `border-collapse:collapse;font:600 .85rem ${mono};margin-top:10px;text-align:center` },
+      cols(svgEl('0 0 560 260', svg, 640),
+      h('div', { textContent: msg[0], style: `font-weight:700;color:${msg[1]}` }),
+      h('table', { style: `border-collapse:collapse;font:600 .85rem ${mono};text-align:center` },
         h('tr', {}, ...['S', 'R', 'Q', 'Юу болох'].map(t => h('th', { textContent: t, style: 'padding:3px 12px;color:var(--muted);border-bottom:2px solid var(--line)' }))),
         ...[[0, 0, '—', 'хадгална'], [1, 0, '1', 'SET'], [0, 1, '0', 'RESET'], [1, 1, '?', 'хориотой']].map(([a, b, c, t]) =>
-          h('tr', { style: a === s && b === r ? 'background:var(--accent-soft)' : '' }, ...[a, b, c, t].map(x => h('td', { textContent: x, style: 'padding:3px 12px;border-bottom:1px solid var(--line)' }))))));
+          h('tr', { style: a === s && b === r ? 'background:var(--accent-soft)' : '' }, ...[a, b, c, t].map(x => h('td', { textContent: x, style: 'padding:3px 12px;border-bottom:1px solid var(--line)' })))))));
   }
 
   // ---- 2. D latch ----
@@ -161,9 +166,9 @@ export function mount(root) {
       + lamp(470, 100, Q, 'Q', 'санах ой') + lamp(470, 170, Qn, 'Q̅');
     body.replaceChildren(
       note('SR latch-д S, R хоёрыг тусад нь удирдах хэцүү. D latch нэг "өгөгдөл" D, нэг "зөвшөөрөл" E (enable) ашиглана. **E = 1** үед Q нь D-г дагана (хаалга онгорхой). **E = 0** үед хаалга хаагдаж Q **хадгална**.'),
-      svgEl('0 0 580 280', svg, 680),
-      h('div', { style: 'margin-top:8px;font-weight:700;color:var(--fg)' }, E ? `E = 1: хаалга ОНГОРХОЙ → Q = D = ${D}` : `E = 0: хаалга ХААЛТТАЙ → Q = ${Q} хадгалагдсан (D-г ойшоохгүй)`),
-      h('div', { style: 'display:flex;gap:8px;margin-top:8px' }, btn('Туршилт: E = 1, D = 1, дараа нь E = 0, D = 0', () => { Object.assign(S, { E: 1, D: 1 }); apply(); snap(); render(); setTimeout(() => { S.E = 0; apply(); snap(); render(); setTimeout(() => { S.D = 0; apply(); snap(); render(); }, 450); }, 450); })),
+      cols(svgEl('0 0 580 280', svg, 680),
+      h('div', { style: 'font-weight:700;color:var(--fg)' }, E ? `E = 1: хаалга ОНГОРХОЙ → Q = D = ${D}` : `E = 0: хаалга ХААЛТТАЙ → Q = ${Q} хадгалагдсан (D-г ойшоохгүй)`),
+      h('div', { style: 'display:flex;gap:8px' }, btn('Туршилт: E = 1, D = 1, дараа нь E = 0, D = 0', () => { Object.assign(S, { E: 1, D: 1 }); apply(); snap(); render(); setTimeout(() => { S.E = 0; apply(); snap(); render(); setTimeout(() => { S.D = 0; apply(); snap(); render(); }, 450); }, 450); }))),
       timing([['E', s0 => s0.E], ['D', s0 => s0.D], ['Q', s0 => s0.Q]], 'Цаг хугацааны диаграмм (өөрчлөлт бүрд нэг алхам)'));
   }
 
@@ -182,9 +187,9 @@ export function mount(root) {
       + wire([[165, 250], [165, 180]], 1 - CLK) + `<text x="172" y="222" font-size="11" fill="var(--muted)">NOT: эсрэг</text>`;
     body.replaceChildren(
       note('Flip-flop = **хоёр D latch** дараалуулсан, хаалга нь **эсрэг** ээлжээр онгойдог. CLK = 0 үед MASTER D-г харна, SLAVE хаалттай. CLK 0 → 1 болох **мөчид** MASTER хаагдаж, түүнд байсан утгыг SLAVE өөртөө авна. Тиймээс Q нь **зөвхөн CLK өгсөх (↑) мөчид** өөрчлөгдөнө!'),
-      svgEl('-30 0 630 280', svg, 700),
-      h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-top:6px' }, btn('⏵ Нэг CLK пульс (0→1→0)', pulse)),
-      h('div', { style: 'margin-top:8px;font-weight:700' }, CLK ? 'CLK = 1: SLAVE онгорхой, MASTER хаалттай — D-г солиход Q өөрчлөгдөхгүй!' : 'CLK = 0: MASTER онгорхой — D-г солиход зөвхөн MASTER дагана, Q хөдлөхгүй'),
+      cols(svgEl('-30 0 630 280', svg, 700),
+      h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, btn('⏵ Нэг CLK пульс (0→1→0)', pulse)),
+      h('div', { style: 'font-weight:700' }, CLK ? 'CLK = 1: SLAVE онгорхой, MASTER хаалттай — D-г солиход Q өөрчлөгдөхгүй!' : 'CLK = 0: MASTER онгорхой — D-г солиход зөвхөн MASTER дагана, Q хөдлөхгүй')),
       timing([['CLK', s0 => s0.CLK], ['D', s0 => s0.D], ['Q', s0 => s0['s.Q']]], 'Q зөвхөн CLK өгсөх үед D-г хуулна'));
   }
 
@@ -207,9 +212,10 @@ export function mount(root) {
     const val = [3, 2, 1, 0].map(k => v[`r${k}.s.Q`]).join(''), inp = [3, 2, 1, 0].map(k => S[`D${k}`]).join('');
     body.replaceChildren(
       note('4 flip-flop нэг CLK-ээр удирдуулж **4-bit register** болно. Дээд талын D товчлууруудаар тоо бэлдээд, **CLK пульс** өгөхөд л тоо register-д "бичигдэнэ". Дараа нь D-г өөрчилсөн ч register хуучнаа хадгална. CPU-ийн дотор ийм хэдэн арван register байдаг.'),
-      svgEl('-30 0 680 262', svg, 760),
-      h('div', { style: `display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:6px;font:700 1.05rem ${mono}` },
-        btn('⏵ CLK пульс', pulse), h('span', {}, `Оролт D = ${inp} (${parseInt(inp, 2)})`), h('span', { textContent: `Register = ${val} (${parseInt(val, 2)})`, style: `color:${val === inp ? '#16a34a' : '#ea580c'}` })),
+      cols(svgEl('-30 0 680 262', svg, 760),
+        btn('⏵ CLK пульс', pulse),
+        h('div', { style: `display:flex;flex-direction:column;gap:6px;font:700 1.05rem ${mono}` },
+          h('span', {}, `Оролт D = ${inp} (${parseInt(inp, 2)})`), h('span', { textContent: `Register = ${val} (${parseInt(val, 2)})`, style: `color:${val === inp ? '#16a34a' : '#ea580c'}` }))),
       timing([['CLK', s0 => s0.CLK], ['D3', s0 => s0.D3], ['Q3', s0 => s0['r3.s.Q']], ['Q0', s0 => s0['r0.s.Q']]], 'Register зөвхөн CLK өгсөх үед шинэчлэгдэнэ'));
   }
 
@@ -228,12 +234,12 @@ export function mount(root) {
     const val = [3, 2, 1, 0].map(k => v[`f${k}.s.Q`]).join('');
     body.replaceChildren(
       note('Flip-flop бүр өөрийн Q̅-г D-д буцааж холбоход **хоёр CLK тутамд нэг удаа** эргэдэг (toggle). Нэгнийх нь гаралтыг дараагийн нь CLK болгон ашиглавал 4 flip-flop **0 → 15** хүртэл тоолно — хоёртын тоолуур! Бит бүр өмнөхөөсөө хоёр дахин удаан эргэнэ.'),
-      svgEl('0 0 640 250', svg, 740),
-      h('div', { style: `display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:6px;font:700 1.2rem ${mono}` },
+      cols(svgEl('0 0 640 250', svg, 740),
+      h('div', { style: `display:flex;gap:14px;flex-wrap:wrap;align-items:center;font:700 1.2rem ${mono}` },
         btn('⏵ CLK пульс', () => { pulseCnt(); }),
         h('label', { style: 'display:flex;gap:6px;align-items:center;font:500 .85rem Inter,system-ui,sans-serif' }, h('input', { type: 'checkbox', checked: !!run, onchange: e => autoRun(e.target.checked) }), 'Автоматаар'),
         btn('Reset', () => { resetView(); render(); }),
-        h('span', { textContent: `${val}₂ = ${parseInt(val, 2)}`, style: 'color:#16a34a' })),
+        h('span', { textContent: `${val}₂ = ${parseInt(val, 2)}`, style: 'color:#16a34a' }))),
       timing([['CLK', s0 => s0.CLK], ['Q3', s0 => s0['f3.s.Q']], ['Q2', s0 => s0['f2.s.Q']], ['Q1', s0 => s0['f1.s.Q']], ['Q0', s0 => s0['f0.s.Q']]], 'Q0 хамгийн хурдан, Q3 хамгийн удаан — хоёртын тооны орон бүр'));
   }
   const pulseCnt = () => { S.CLK = 1; apply(); snap(); S.CLK = 0; apply(); snap(); render(); };
