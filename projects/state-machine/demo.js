@@ -99,12 +99,12 @@ export function mount(root) {
     n.append(...kids);
     return n;
   };
-  // Stage: the real-world scene on top, the state graph below it.
-  // The stage never shrinks below its content; on narrow screens the whole demo scrolls instead.
-  const stage = h('div', { style: 'flex:1 0 auto;min-height:560px;display:flex;flex-direction:column' });
+  // Stage: the real-world scene and the state graph. layout() puts them side by side or stacked,
+  // whichever shows both bigger in the space available. Small screens scroll the whole demo.
+  const stage = h('div', { style: 'flex:1 1 0;min-height:420px;display:flex;gap:8px;padding:8px' });
   root.style.overflowY = 'auto';
-  const sceneBox = h('div', { style: 'flex:1.4 1 0;min-height:260px;display:flex;flex-direction:column;margin:10px 10px 0;border-radius:10px;background:var(--bg);overflow:hidden' });
-  const sceneArea = h('div', { style: 'position:relative;flex:1;min-height:200px' });
+  const sceneBox = h('div', { style: 'min-width:0;min-height:0;display:flex;flex-direction:column;border-radius:10px;background:var(--bg);overflow:hidden' });
+  const sceneArea = h('div', { style: 'position:relative;flex:1;min-height:120px' });
   const sceneSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   sceneSvg.setAttribute('viewBox', SCENE_VIEWBOX);
   sceneSvg.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;font-family:Inter,system-ui,sans-serif');
@@ -112,13 +112,15 @@ export function mount(root) {
   sceneArea.append(sceneSvg);
   sceneBox.append(sceneArea, caption);
 
-  const wrap = h('div', { style: 'position:relative;flex:1 1 0;min-height:240px' });
+  const wrap = h('div', { style: 'min-width:0;min-height:0;display:flex;flex-direction:column' });
+  const graphArea = h('div', { style: 'position:relative;flex:1;min-height:120px' });
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
   svg.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none');
-  const info = h('div', { style: 'position:absolute;top:10px;left:12px;right:12px;font-size:.8rem;color:var(--muted);pointer-events:none' });
-  const result = h('div', { style: 'position:absolute;bottom:10px;left:12px;font-size:.85rem;font-weight:600;padding:3px 10px;border-radius:99px;pointer-events:none' });
-  wrap.append(svg, info, result);
+  const info = h('div', { style: 'padding:2px 4px 4px;font-size:.78rem;line-height:1.4;color:var(--muted)' });
+  const result = h('div', { style: 'position:absolute;bottom:6px;left:6px;font-size:.85rem;font-weight:600;padding:3px 10px;border-radius:99px;pointer-events:none' });
+  graphArea.append(svg, result);
+  wrap.append(info, graphArea);
   stage.append(sceneBox, wrap);
 
   const mono = 'font-family:"JetBrains Mono",ui-monospace,monospace';
@@ -134,7 +136,7 @@ export function mount(root) {
   const input = h('input', { type: 'text', 'aria-label': 'Оролт', spellcheck: false, style: `width:170px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);font-size:.95rem;${mono}` });
   const label = s => h('span', { textContent: s, style: 'font-size:.85rem;color:var(--muted)' });
   const inputLabel = label('Оролт:');
-  const legend = h('div', { style: 'display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem;color:var(--muted)' },
+  const legend = h('div', { style: 'display:flex;flex-wrap:wrap;gap:2px 14px;font-size:.78rem;color:var(--muted)' },
     ...Object.entries(EVENTS).map(([k, v]) => h('span', {}, h('b', { textContent: k, style: `color:var(--fg);${mono}` }), ` = ${v}`)));
   const presetBtns = Object.keys(PRESETS).map(name => h('button', { className: 'btn btn-sm', textContent: name, onclick: () => load(name) }));
 
@@ -146,10 +148,9 @@ export function mount(root) {
     h('div', { style: 'display:flex;flex-direction:column;gap:6px;margin-top:8px' }, editorHint, editor, errors));
 
   const row = (...kids) => h('div', { style: 'display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center' }, ...kids);
-  const controls = h('div', { style: 'display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-top:1px solid var(--line)' },
-    row(inputLabel, input, resetBtn, backBtn, stepBtn, play, speedField),
+  const controls = h('div', { style: 'flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 14px;border-top:1px solid var(--line)' },
+    row(inputLabel, input, resetBtn, backBtn, stepBtn, play, speedField, h('span', { style: 'flex:1' }), label('Machine:'), ...presetBtns),
     row(tape), legend, trace,
-    row(label('Machine:'), ...presetBtns),
     details);
   root.append(stage, controls);
 
@@ -164,11 +165,33 @@ export function mount(root) {
     const ps = nodes().map(s => pos[s]);
     if (!ps.length) return;
     const xs = ps.map(p => p[0]), ys = ps.map(p => p[1]);
-    let x0 = Math.min(...xs) - R - 60, x1 = Math.max(...xs) + R + 40, y0 = Math.min(...ys) - R - 70, y1 = Math.max(...ys) + R + 60;
-    const w = Math.max(x1 - x0, 360), hh = Math.max(y1 - y0, 240);
+    const loops = m.edges.some(e => e.from === e.to), below = nodes().includes(ANY) ? 26 : 0;
+    let x0 = Math.min(...xs) - R - 52, x1 = Math.max(...xs) + R + 14, y0 = Math.min(...ys) - R - (loops ? 64 : 22), y1 = Math.max(...ys) + R + 22 + below;
+    const w = Math.max(x1 - x0, 300), hh = Math.max(y1 - y0, 180);
     vb = [(x0 + x1 - w) / 2, (y0 + y1 - hh) / 2, w, hh];
     svg.setAttribute('viewBox', vb.join(' '));
+    layout();
   }
+
+  // Try side-by-side and stacked splits and keep the one where the scene and graph render largest
+  // (geometric mean of their drawn areas, each fitted to its own aspect ratio).
+  const CAPTION = 44, INFO = 36;
+  function layout() {
+    const r = stage.getBoundingClientRect(), W = r.width - 16, H = r.height - 16;
+    if (W <= 0 || H <= 0) return;
+    const sceneAspect = live ? 600 / 380 : 320 / 220, graphAspect = vb[2] / vb[3];
+    const area = (w, h, aspect) => { const s = Math.max(0, Math.min(w, h * aspect)); return s * (s / aspect); };
+    let best = null;
+    for (const dir of ['row', 'column']) for (const f of [0.45, 0.5, 0.55, 0.6, 0.65]) {
+      const [sw, sh, gw, gh] = dir === 'row' ? [W * f - 4, H, W * (1 - f) - 4, H] : [W, H * f - 4, W, H * (1 - f) - 4];
+      const score = Math.sqrt(area(sw, sh - CAPTION, sceneAspect) * area(gw, gh - INFO, graphAspect));
+      if (!best || score > best.score) best = { dir, f, score };
+    }
+    stage.style.flexDirection = best.dir;
+    sceneBox.style.flex = `0 0 calc(${best.f * 100}% - 4px)`;
+    wrap.style.flex = '1 1 0';
+  }
+  new ResizeObserver(layout).observe(stage);
 
   function load(name) {
     stop();
@@ -183,7 +206,7 @@ export function mount(root) {
     for (const el of [inputLabel, input, backBtn, stepBtn, speedField, tape]) show(el, !live);
     show(legend, live);
     // The arena needs more room than the small string scenes.
-    sceneBox.style.flex = live ? '1.6 1 0' : '1.2 1 0';
+    layout();
     editorHint.replaceChildren(...(live
       ? ['Bot нь ', h('code', { textContent: 'Patrol' }), ', ', h('code', { textContent: 'Chase' }), ', ', h('code', { textContent: 'Attack' }), ', ', h('code', { textContent: 'Flee' }), ', ', h('code', { textContent: 'Dead' }), ' төлвүүдийн үйлдлийг мэднэ. Шилжилтийг өөрчилж үз — жишээ нь Flee мөрүүдийг устгавал bot үхтэлээ тулалдана, Dead -> Patrol-г устгавал дахин төрөхгүй.']
       : ['Мөр бүрд: ', h('code', { textContent: 'start: q0' }), ', ', h('code', { textContent: 'accept: q1, q2' }), ', ', h('code', { textContent: 'q0 -> q1 : a, b' }), ' (ε эсвэл eps = хоосон шилжилт, ', h('code', { textContent: '* -> q : x' }), ' = бүх төлвөөс). Бичих зуур шууд шинэчлэгдэнэ.']));

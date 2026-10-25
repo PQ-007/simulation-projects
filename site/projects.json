@@ -34,5 +34,31 @@
     "status": "live",
     "demo": "../projects/state-machine/demo.js",
     "thumb": "../projects/state-machine/thumb.svg"
+  },
+  {
+    "id": "pathfinding",
+    "title": "Pathfinding",
+    "summary": "Хана зурж, BFS, DFS, Dijkstra, A*, Greedy хэрхэн зам хайж байгааг алхам алхмаар харьцуул.",
+    "tags": [
+      "graph",
+      "A*",
+      "Dijkstra"
+    ],
+    "status": "live",
+    "demo": "../projects/pathfinding/demo.js",
+    "thumb": "../projects/pathfinding/thumb.svg"
+  },
+  {
+    "id": "boids",
+    "title": "Boids",
+    "summary": "Separation, alignment, cohesion гэсэн гурван энгийн дүрмээс шувууны сүрэг үүсэхийг хар.",
+    "tags": [
+      "emergence",
+      "flocking",
+      "agents"
+    ],
+    "status": "live",
+    "demo": "../projects/boids/demo.js",
+    "thumb": "../projects/boids/thumb.svg"
   }
 ]

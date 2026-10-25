@@ -22,7 +22,15 @@ let projects = [];
 const escAttr = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const mathRenderer = t => `<${t.display ? 'div' : 'span'} class="math" data-tex="${escAttr(t.text)}"${t.display ? ' data-display="1"' : ''}></${t.display ? 'div' : 'span'}>`;
 const startAt = s => (i => (i < 0 ? undefined : i))(s.indexOf('$'));
+// Media lines in project docs:  @youtube(VIDEO_ID "caption")  and  @live(widget.js "caption").
+// They become placeholders here and are filled in after sanitizing (see fillEmbeds).
+const embedRenderer = t => `<figure class="embed" data-kind="${t.kind}" data-src="${escAttr(t.src)}"><figcaption>${escAttr(t.caption)}</figcaption></figure>`;
 marked.use({ extensions: [
+  { name: 'embed', level: 'block', start: s => /^@(youtube|live)\(/m.exec(s)?.index, renderer: embedRenderer,
+    tokenizer(src) {
+      const m = /^@(youtube|live)\(([^\s)"]+)(?:\s+"([^"]*)")?\)[^\S\n]*(?:\n|$)/.exec(src);
+      if (m) return { type: 'embed', raw: m[0], kind: m[1], src: m[2], caption: m[3] || '' };
+    } },
   { name: 'mathBlock', level: 'block', start: s => /^\$\$/m.exec(s)?.index, renderer: mathRenderer,
     tokenizer(src) { const m = /^\$\$([\s\S]+?)\$\$[^\S\n]*(?:\n|$)/.exec(src); if (m) return { type: 'mathBlock', raw: m[0], text: m[1].trim(), display: true }; } },
   { name: 'mathInline', level: 'inline', start: startAt, renderer: mathRenderer,
@@ -83,7 +91,7 @@ const card = (p, setTag) => el('article', { class: 'card' },
         el('button', { class: 'tag', title: `"${t}"-ээр шүүх`, onclick: () => setTag(t) }, t))),
       el('span', { class: 'open', 'aria-hidden': 'true' }, 'Нээх →'))));
 
-const VIEWS = [['split', 'Split', '1'], ['demo', 'Demo', '2'], ['docs', 'Docs', '3']];
+const VIEWS = [['split', 'Split', '1'], ['demo', 'Demo', '2'], ['docs', 'Docs', '3'], ['real', 'Real world', '4']];
 // The project currently on screen, so switching views doesn't remount the demo.
 let current = null;
 
@@ -99,9 +107,9 @@ function renderProject(id, view) {
     const body = el('div', { class: 'pane-body' });
     return { toggle, body, node: el('section', { class: `pane pane-${key}`, 'aria-label': label }, el('div', { class: 'pane-head' }, el('span', {}, label), toggle), body) };
   };
-  const demo = pane('demo', 'Demo'), docs = pane('docs', 'Docs');
+  const demo = pane('demo', 'Demo'), docs = pane('docs', 'Docs'), real = pane('real', 'Real world');
   const divider = el('div', { class: 'divider', role: 'separator', 'aria-orientation': 'vertical', title: 'Чирж хэмжээг өөрчлөх · давхар товшвол тэнцүүлнэ' });
-  const layout = el('div', { class: 'layout' }, demo.node, divider, docs.node);
+  const layout = el('div', { class: 'layout' }, demo.node, divider, docs.node, real.node);
   const buttons = VIEWS.map(([key, label, k]) => el('button', { role: 'tab', title: `${label} (${k})`, onclick: () => go(key) }, label));
 
   const setSplit = pct => { layout.style.setProperty('--split', `${pct}%`); store.set('split', pct); };
@@ -120,7 +128,7 @@ function renderProject(id, view) {
   const setView = v => {
     layout.dataset.view = v;
     buttons.forEach((b, i) => b.setAttribute('aria-selected', String(VIEWS[i][0] === v)));
-    for (const [key, pn] of [['demo', demo], ['docs', docs]]) {
+    for (const [key, pn] of [['demo', demo], ['docs', docs], ['real', real]]) {
       pn.toggle.textContent = v === key ? '⤡ Split view' : '⤢ Full view';
       pn.toggle.title = v === key ? 'Split view руу буцах (Esc)' : 'Зөвхөн үүнийг харуулах';
     }
@@ -135,6 +143,7 @@ function renderProject(id, view) {
   setView(view);
   renderDemo(p, demo.body);
   renderDocs(p, docs.body);
+  renderDocs(p, real.body, 'REAL_WORLD.md');
 }
 
 async function renderDemo(p, panel) {
@@ -154,13 +163,13 @@ async function renderDemo(p, panel) {
   }
 }
 
-async function renderDocs(p, panel) {
+async function renderDocs(p, panel, file = 'README.md') {
   const base = new URL(`../projects/${p.id}/`, location.href);
   const box = el('article', { class: 'doc' }, 'Ачаалж байна…');
   panel.append(box);
   try {
-    const r = await fetch(versioned('README.md', base));
-    if (!r.ok) throw new Error(`README.md олдсонгүй (${r.status})`);
+    const r = await fetch(versioned(file, base));
+    if (!r.ok) throw new Error(file === 'README.md' ? `README.md олдсонгүй (${r.status})` : 'Энэ project-ийн бодит хэрэглээний тайлбар хараахан бичигдээгүй байна.');
     const html = DOMPurify.sanitize(marked.parse(await r.text()));
     box.innerHTML = html;
     box.querySelectorAll('.math').forEach(m => {
@@ -169,12 +178,41 @@ async function renderDocs(p, panel) {
     box.querySelectorAll('pre code').forEach(c => window.hljs?.highlightElement(c));
     // README links/images are relative to the project folder, not the site.
     box.querySelectorAll('img[src]').forEach(i => { i.src = new URL(i.getAttribute('src'), base); });
+    // A paragraph holding only an image becomes a figure, captioned by its alt text.
+    box.querySelectorAll('p > img:only-child').forEach(img => {
+      if (img.parentElement.textContent.trim()) return;
+      img.loading = 'lazy';
+      img.parentElement.replaceWith(el('figure', { class: 'fig' }, img.cloneNode(), ...(img.alt ? [el('figcaption', {}, img.alt)] : [])));
+    });
+    fillEmbeds(box, base);
     box.querySelectorAll('a[href]').forEach(a => {
       const h = a.getAttribute('href');
       if (!h.startsWith('#') && !/^[a-z]+:/i.test(h)) a.href = new URL(h, base);
     });
   } catch (e) {
     box.textContent = e.message;
+  }
+}
+
+function fillEmbeds(box, base) {
+  for (const fig of box.querySelectorAll('figure.embed')) {
+    const { kind, src } = fig.dataset, cap = fig.querySelector('figcaption');
+    if (kind === 'youtube' && /^[\w-]{11}$/.test(src)) {
+      // Click-to-play: only a thumbnail loads until the reader asks for the video.
+      const frame = el('button', { class: 'yt', 'aria-label': `Video тоглуулах: ${cap?.textContent || ''}` },
+        el('img', { src: `https://i.ytimg.com/vi/${src}/hqdefault.jpg`, alt: '', loading: 'lazy' }), el('span', { class: 'yt-play', 'aria-hidden': 'true' }));
+      frame.addEventListener('click', () => frame.replaceWith(el('iframe', {
+        class: 'yt-frame', src: `https://www.youtube-nocookie.com/embed/${src}?autoplay=1&rel=0`,
+        title: cap?.textContent || 'YouTube video', allow: 'autoplay; encrypted-media; picture-in-picture', allowfullscreen: '',
+      })));
+      fig.prepend(frame);
+    } else if (kind === 'live' && /^[\w-]+\.js$/.test(src)) {
+      // A small interactive widget from the project folder, mounted like a demo.
+      const stage = el('div', { class: 'live' }, 'Ачаалж байна…');
+      fig.prepend(stage);
+      import(versioned(src, base)).then(mod => { stage.replaceChildren(); return mod.mount(stage); })
+        .catch(e => { stage.textContent = `Widget ачаалж чадсангүй: ${e.message}`; });
+    } else fig.remove();
   }
 }
 

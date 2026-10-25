@@ -340,7 +340,7 @@ export function mount(root) {
     raf = requestAnimationFrame(frame);
   }
 
-  loadPreset('GEN 1 CS');
+  loadPreset(Object.keys(PRESETS)[0]); // the logo; by position, so renaming its label can't break this
   resize();
   raf = requestAnimationFrame(frame);
   // Stop animating once the demo is removed from the page.
