@@ -8,7 +8,8 @@
       "emergence"
     ],
     "status": "live",
-    "demo": "../projects/conways-game-of-life/demo.js"
+    "demo": "../projects/conways-game-of-life/demo.js",
+    "thumb": "../projects/conways-game-of-life/thumb.svg"
   },
   {
     "id": "fourier-epicycles",
@@ -19,6 +20,7 @@
       "signal processing"
     ],
     "status": "live",
-    "demo": "../projects/fourier-epicycles/demo.js"
+    "demo": "../projects/fourier-epicycles/demo.js",
+    "thumb": "../projects/fourier-epicycles/thumb.svg"
   }
 ]

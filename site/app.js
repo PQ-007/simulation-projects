@@ -7,7 +7,10 @@ const el = (tag, attrs = {}, ...kids) => {
   n.append(...kids);
   return n;
 };
-const SITE = 'Симуляцийн төслүүд';
+const SITE = 'Simulation Projects';
+// The ?v= on this script's tag in index.html; reused so demos and docs also skip stale browser caches.
+const VERSION = new URL(document.currentScript.src).searchParams.get('v') || '0';
+const versioned = (path, base = location.href) => { const u = new URL(path, base); u.searchParams.set('v', VERSION); return u; };
 const STATUS = { planned: 'Төлөвлөсөн', wip: 'Хийгдэж буй', live: 'Бэлэн' };
 const store = {
   get: k => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -40,39 +43,45 @@ let filter = { q: '', tag: null };
 function renderHome() {
   document.title = SITE;
   crumb.replaceChildren();
-  const tags = [...new Set(projects.flatMap(p => p.tags || []))];
   const grid = el('div', { class: 'grid' });
-  const chips = el('div', { class: 'chips' });
-  const search = el('input', { type: 'search', class: 'search', placeholder: 'Төсөл хайх…', 'aria-label': 'Төсөл хайх', oninput: e => { filter.q = e.target.value; update(); } });
+  const active = el('div', { class: 'active-filter' });
+  const count = el('span', { class: 'count' });
+  const search = el('input', { type: 'search', placeholder: 'Хайх…', 'aria-label': 'Хайх', oninput: e => { filter.q = e.target.value; update(); } });
   search.value = filter.q;
+  const setTag = t => { filter.tag = t; update(); };
 
   function update() {
-    chips.replaceChildren(...[null, ...tags].map(t =>
-      el('button', { class: 'chip', 'aria-pressed': String(filter.tag === t), onclick: () => { filter.tag = t; update(); } }, t ?? 'Бүгд')));
+    active.replaceChildren(...(filter.tag ? [el('button', { class: 'chip', 'aria-pressed': 'true', title: 'Шүүлтүүр арилгах', onclick: () => setTag(null) }, `${filter.tag} ✕`)] : []));
     const q = filter.q.trim().toLowerCase();
     const shown = projects.filter(p =>
       (!filter.tag || (p.tags || []).includes(filter.tag)) &&
       (!q || [p.title, p.summary, ...(p.tags || [])].join(' ').toLowerCase().includes(q)));
-    grid.replaceChildren(...shown.map(card));
-    if (!shown.length) grid.append(el('p', { class: 'empty-note' }, 'Тохирох төсөл олдсонгүй.'));
+    count.textContent = shown.length === projects.length ? projects.length : `${shown.length} / ${projects.length}`;
+    grid.replaceChildren(...shown.map(p => card(p, setTag)));
+    if (!shown.length) grid.append(el('p', { class: 'empty-note' }, 'Илэрц олдсонгүй.'));
   }
 
-  app.className = '';
+  app.className = 'home';
   app.replaceChildren(
-    el('h1', {}, SITE),
-    el('p', { class: 'lead' }, 'Алгоритм ба симуляцууд — тус бүрийг өөрт тохирох хэрэгслээр бүтээсэн.'),
-    el('div', { class: 'filters' }, search, chips),
+    el('div', { class: 'toolbar' },
+      el('h1', {}, 'Simulations ', count),
+      active,
+      el('label', { class: 'search' }, el('span', { class: 'search-icon', 'aria-hidden': 'true' }, '⌕'), search)),
     grid);
   update();
 }
 
-const card = p => el('a', { class: 'card', href: `#/p/${p.id}` },
-  el('div', { class: 'card-top' },
-    el('span', { class: `badge status-${p.status}` }, STATUS[p.status] || p.status),
-    p.demo ? el('span', { class: 'card-meta' }, 'Demo') : ''),
-  el('h2', {}, p.title),
-  el('p', {}, p.summary),
-  el('div', {}, ...(p.tags || []).map(t => el('span', { class: 'tag' }, t))));
+// The title link stretches over the whole card; tags sit above it so they stay clickable as filters.
+const card = (p, setTag) => el('article', { class: 'card' },
+  el('div', { class: 'thumb' }, p.thumb ? el('img', { src: p.thumb, alt: '', loading: 'lazy' }) : ''),
+  el('div', { class: 'card-body' },
+    el('h2', {}, el('a', { href: `#/p/${p.id}` }, p.title),
+      p.status !== 'live' ? el('span', { class: `badge status-${p.status}` }, STATUS[p.status] || p.status) : ''),
+    el('p', {}, p.summary),
+    el('div', { class: 'card-foot' },
+      el('div', { class: 'card-tags' }, ...(p.tags || []).map(t =>
+        el('button', { class: 'tag', title: `"${t}"-ээр шүүх`, onclick: () => setTag(t) }, t))),
+      el('span', { class: 'open', 'aria-hidden': 'true' }, 'Нээх →'))));
 
 const VIEWS = [['split', 'Split', '1'], ['demo', 'Demo', '2'], ['docs', 'Docs', '3']];
 // The project currently on screen, so switching views doesn't remount the demo.
@@ -136,7 +145,7 @@ async function renderDemo(p, panel) {
   const box = el('div', { class: 'demo' }, 'Ачаалж байна…');
   panel.append(box);
   try {
-    const mod = await import(new URL(p.demo, location.href));
+    const mod = await import(versioned(p.demo));
     box.replaceChildren();
     await mod.mount(box);
   } catch (e) {
@@ -150,7 +159,7 @@ async function renderDocs(p, panel) {
   const box = el('article', { class: 'doc' }, 'Ачаалж байна…');
   panel.append(box);
   try {
-    const r = await fetch(new URL('README.md', base));
+    const r = await fetch(versioned('README.md', base));
     if (!r.ok) throw new Error(`README.md олдсонгүй (${r.status})`);
     const html = DOMPurify.sanitize(marked.parse(await r.text()));
     box.innerHTML = html;
@@ -173,7 +182,7 @@ function renderNotFound() {
   current = null;
   crumb.replaceChildren();
   app.className = '';
-  app.replaceChildren(el('h1', {}, 'Олдсонгүй'), el('a', { href: '#/' }, 'Төслүүд рүү буцах'));
+  app.replaceChildren(el('h1', {}, 'Олдсонгүй'), el('a', { href: '#/' }, 'Simulation Projects руу буцах'));
 }
 
 // 1/2/3 switch views, Esc returns to split; ignored while typing or using demo controls.
