@@ -1,0 +1,57 @@
+{
+  "headline": "Ид шид биш — \"одоо ямар төлөвт байна, юу ирвэл хаашаа шилжих вэ\"",
+  "rule": "Нэг агшинд яг нэг төлөв. Event ирэхэд шилжилтийн хүснэгтээс дараагийн төлвийг харна.",
+  "items": [
+    {
+      "title": "Pac-Man-ийн сүнснүүд",
+      "tag": "game",
+      "image": "pacman.svg",
+      "youtube": "ataGotQ7ir8",
+      "magic": "Сүнснүүдийн \"ухаан\" бол 4 төлөвтэй state machine + энгийн timer.",
+      "how": "Сүнс **Scatter** (буланд буцах) ба **Chase** (хөөх) хооронд timer-ээр шилжинэ. Том цэг идэхэд бүгд **Frightened** болж цэнхэрлэнэ, идэгдвэл **Eaten** болж гэр лүүгээ буцна. Тоглогчид \"ухаалаг\" санагддаг хэмнэл яг энэ төлвүүдийн ээлжлэлээс үүсдэг.",
+      "demo": "Demo-ийн Game bot: Patrol / Chase / Flee / Dead."
+    },
+    {
+      "title": "Unity Animator",
+      "tag": "game",
+      "youtube": "lpekqN4_4xg",
+      "magic": "Дүрийн алхах, гүйх, үсрэх бүх animation бол зурагтай state machine.",
+      "how": "Unity-ийн Animator Controller-т `Idle`, `Walk`, `Run`, `Jump` төлвүүдийг хайрцаг болгон зурж, шилжилт бүрт нөхцөл (`speed > 0.1`) тавина. Demo дахь **Any State**-ийг Unity-д ч яг ингэж нэрлэдэг — аль ч төлвөөс `Die` руу.",
+      "demo": "Demo дахь \"Any\" node = Unity-ийн Any State."
+    },
+    {
+      "title": "F.E.A.R.-ийн дайсны AI",
+      "tag": "game",
+      "youtube": "PaOLBOuyswI",
+      "magic": "\"Хамгийн ухаалаг\" гэгдсэн AI ердөө 3 төлөвтэй state machine дээр суурилсан.",
+      "how": "F.E.A.R. (2005)-ийн дайснууд бүслэх, далдлах, гранат шидэх нь гайхалтай санагддаг. Jeff Orkin-ий тайлбарласнаар state machine нь ердөө `Goto`, `Animate`, `UseSmartObject` гэсэн 3 төлөвтэй, харин юу хийхээ **planner** сонгодог.",
+      "demo": "Demo-ийн bot-ийг planner-ээр удирдвал F.E.A.R. болно."
+    },
+    {
+      "title": "TCP холболт",
+      "tag": "tech",
+      "image": "tcp.svg",
+      "youtube": "xMtP5ZB3wSk",
+      "magic": "Вэб хуудас нээх бүрт таны компьютер, сервер хоёр state machine-аар \"гар барилцдаг\".",
+      "how": "Client `SYN` илгээж **SYN-SENT** болно, сервер `SYN+ACK` хариулна, client `ACK` илгээхэд хоёулаа **ESTABLISHED**. Хаахдаа `FIN`/`ACK`-ээр **TIME-WAIT** хүртэл алхана. Terminal-д `ss -t` бичиж өөрийн холболтуудын төлвийг шууд харж болно.",
+      "demo": "Packet бүр = event, TCP төлөв = demo-ийн төлөв."
+    },
+    {
+      "title": "Regex хайлт",
+      "tag": "tech",
+      "youtube": "hprXxJHQVfQ",
+      "more": "vhiiia1_hC4",
+      "magic": "Regex бүр компьютерт state machine болж хөрвөөд, тэмдэгт бүрээр нэг алхам шилждэг.",
+      "how": "`grep`, VS Code-ийн хайлт, compiler-ийн lexer нь pattern-ийг **automaton** болгоно. Текстийг тэмдэгт тэмдэгтээр уншиж, төлвөөс төлөвт шилжинэ — accept төлөвт хүрвэл таарсан. Demo дахь Turnstile-ийн \"оролтын мөр унших\" яг энэ.",
+      "demo": "Turnstile: тэмдэгт бүр (c, p) нэг шилжилт."
+    },
+    {
+      "title": "Онлайн захиалга, төлбөр",
+      "tag": "tech",
+      "image": "order.svg",
+      "magic": "\"Хүргэгдсэн захиалга дахиад төлбөр хүлээх\" алдаа state machine-д гарах боломжгүй.",
+      "how": "Захиалга `Pending → Paid → Shipped → Delivered` гэж зөвхөн зөвшөөрөгдсөн шилжилтээр явна. Stripe-ийн төлбөр ч `requires_payment_method → processing → succeeded` гэх тодорхой төлвүүдтэй. Хүснэгтэд байхгүй шилжилтийг код хийж чадахгүй.",
+      "demo": "Demo-д шилжилтгүй event ирвэл үл тоомсорлодогтой ижил."
+    }
+  ]
+}

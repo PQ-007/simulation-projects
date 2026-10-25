@@ -143,7 +143,7 @@ function renderProject(id, view) {
   setView(view);
   renderDemo(p, demo.body);
   renderDocs(p, docs.body);
-  renderDocs(p, real.body, 'REAL_WORLD.md');
+  renderReal(p, real.body);
 }
 
 async function renderDemo(p, panel) {
@@ -192,6 +192,113 @@ async function renderDocs(p, panel, file = 'README.md') {
   } catch (e) {
     box.textContent = e.message;
   }
+}
+
+// Real world: a gallery of things built on the project's algorithm, from <project>/real.json.
+const TAGS = { game: '🎮 Тоглоом', tech: '🖥️ Технологи', film: '🎬 Кино', nature: '🌿 Байгаль', science: '🔬 Шинжлэх ухаан' };
+const ytThumb = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+const isYt = id => /^[\w-]{11}$/.test(id || '');
+// Inline markdown with $math$, sanitized, for the short texts in real.json.
+function inlineMd(text) {
+  const n = el('span');
+  n.innerHTML = DOMPurify.sanitize(marked.parseInline(text || ''));
+  n.querySelectorAll('.math').forEach(m => { try { katex.render(m.dataset.tex, m, { throwOnError: false }); } catch { m.textContent = m.dataset.tex; } });
+  return n;
+}
+// Click-to-play YouTube: a thumbnail until clicked, then the privacy-friendly player.
+const ytButton = (id, label, autoplay = false) => {
+  const play = () => b.replaceWith(el('iframe', {
+    class: 'yt-frame', src: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`,
+    title: label, allow: 'autoplay; encrypted-media; picture-in-picture', allowfullscreen: '',
+  }));
+  const b = el('button', { class: 'yt', 'aria-label': `Video тоглуулах: ${label}`, onclick: play },
+    el('img', { src: ytThumb(id), alt: '', loading: 'lazy' }), el('span', { class: 'yt-play', 'aria-hidden': 'true' }));
+  if (autoplay) queueMicrotask(play);
+  return b;
+};
+
+async function renderReal(p, panel) {
+  const base = new URL(`../projects/${p.id}/`, location.href);
+  const box = el('div', { class: 'real' }, 'Ачаалж байна…');
+  panel.append(box);
+  let data;
+  try {
+    const r = await fetch(versioned('real.json', base));
+    if (!r.ok) throw new Error();
+    data = await r.json();
+  } catch {
+    box.textContent = 'Энэ project-ийн бодит жишээнүүд хараахан нэмэгдээгүй байна.';
+    return;
+  }
+  const items = data.items || [];
+  const asset = f => new URL(f, base).href;
+  let filter = null;
+
+  const grid = el('div', { class: 'rgrid' });
+  const chips = el('div', { class: 'rchips' });
+  const tags = [...new Set(items.map(i => i.tag))];
+  function update() {
+    chips.replaceChildren(...[null, ...tags].map(t => el('button', {
+      class: 'chip', 'aria-pressed': String(filter === t), onclick: () => { filter = t; update(); },
+    }, t ? TAGS[t] || t : `Бүгд · ${items.length}`)));
+    grid.replaceChildren(...items.map((it, i) => [it, i]).filter(([it]) => !filter || it.tag === filter).map(([it, i]) => card(it, i)));
+  }
+  const card = (it, i) => el('button', { class: 'rcard', onclick: () => open(i) },
+    el('div', { class: 'rmedia' },
+      el('img', { src: it.image ? asset(it.image) : ytThumb(it.youtube), alt: '', loading: 'lazy', class: it.image ? 'fit' : '' }),
+      it.live ? el('span', { class: 'rbadge live' }, '● LIVE') : isYt(it.youtube) ? el('span', { class: 'rbadge' }, '▶ Video') : ''),
+    el('div', { class: 'rbody' },
+      el('span', { class: `rtag t-${it.tag}` }, TAGS[it.tag] || it.tag),
+      el('h3', {}, it.title),
+      el('p', { class: 'rmagic' }, inlineMd(it.magic))));
+
+  // Detail dialog: the main visual (live widget > video > image), the explanation, and prev/next.
+  const dlg = el('dialog', { class: 'rdialog' });
+  dlg.addEventListener('close', () => dlg.replaceChildren());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') open((cur + 1) % items.length);
+    if (e.key === 'ArrowLeft') open((cur - 1 + items.length) % items.length);
+  });
+  let cur = 0;
+  function open(i) {
+    cur = i;
+    const it = items[i];
+    const media = el('div', { class: 'rd-media' });
+    const extra = [];
+    if (it.live && /^[\w-]+\.js$/.test(it.live)) {
+      const stage = el('div', { class: 'live' }, 'Ачаалж байна…');
+      media.append(stage);
+      import(versioned(it.live, base)).then(m => { stage.replaceChildren(); m.mount(stage); }).catch(e => { stage.textContent = e.message; });
+      if (isYt(it.youtube)) extra.push(ytButton(it.youtube, it.title));
+    } else if (isYt(it.youtube)) {
+      media.append(ytButton(it.youtube, it.title, true));
+      if (it.image) extra.push(el('img', { src: asset(it.image), alt: it.title, class: 'rd-img' }));
+    } else if (it.image) media.append(el('img', { src: asset(it.image), alt: it.title, class: 'rd-img' }));
+    if (isYt(it.more)) extra.push(ytButton(it.more, `${it.title} — дэлгэрэнгүй`));
+    const nav = (d, label) => el('button', { class: 'btn btn-sm', 'aria-label': label, onclick: () => open((cur + d + items.length) % items.length) }, d < 0 ? '←' : '→');
+    dlg.replaceChildren(
+      el('div', { class: 'rd-top' },
+        el('span', { class: `rtag t-${it.tag}` }, TAGS[it.tag] || it.tag),
+        el('span', { class: 'rd-count' }, `${i + 1} / ${items.length}`),
+        nav(-1, 'Өмнөх'), nav(1, 'Дараах'),
+        el('button', { class: 'btn btn-sm', 'aria-label': 'Хаах', onclick: () => dlg.close() }, '✕')),
+      media,
+      el('div', { class: 'rd-body' },
+        el('h2', {}, it.title),
+        el('p', { class: 'rd-magic' }, el('b', {}, 'Ид шид биш: '), inlineMd(it.magic)),
+        el('p', {}, inlineMd(it.how)),
+        it.demo ? el('p', { class: 'rd-demo' }, el('b', {}, 'Demo дээр: '), inlineMd(it.demo)) : '',
+        ...extra));
+    if (!dlg.open) dlg.showModal();
+  }
+
+  box.replaceChildren(
+    el('header', { class: 'real-head' },
+      el('h2', {}, data.headline || ''),
+      el('p', {}, inlineMd(data.rule || ''))),
+    chips, grid, dlg);
+  update();
 }
 
 function fillEmbeds(box, base) {

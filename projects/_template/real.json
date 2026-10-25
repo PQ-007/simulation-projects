@@ -1,0 +1,17 @@
+{
+  "headline": "Ид шид биш — энэ algorithm-ийн гол санаа нэг өгүүлбэрээр",
+  "rule": "Algorithm-ийн дүрэм нэг өгүүлбэрээр.",
+  "items": [
+    {
+      "title": "Бодит жишээний нэр",
+      "tag": "game",
+      "youtube": "VIDEO_ID_11",
+      "image": "optional.png",
+      "live": "optional-widget.js",
+      "more": "OPTIONAL_2ND_VIDEO",
+      "magic": "Нэг өгүүлбэр: энэ гайхалтай зүйл чинь үнэндээ энэ algorithm.",
+      "how": "2–3 өгүүлбэрээр яг хэрхэн ажилладаг вэ.",
+      "demo": "Demo дээрх аль хэсэгтэй холбоотой вэ."
+    }
+  ]
+}

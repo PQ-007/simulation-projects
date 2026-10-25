@@ -13,7 +13,7 @@ python3 -m http.server 8000
 
 ## Add a project
 
-1. Copy `projects/_template/` to `projects/<name>/` and write its `README.md` (shown in the **Docs** tab) and `REAL_WORLD.md` (real game-dev / tech examples, shown in the **Real world** tab).
+1. Copy `projects/_template/` to `projects/<name>/` and write its `README.md` (shown in the **Docs** tab) and `real.json` (a gallery of real things built on the algorithm, shown in the **Real world** tab; tags: game, tech, film, nature, science; each card can have a verified `youtube` id, an `image`, a `live` widget module and a second `more` video).
 2. Add an entry to `site/projects.json`. Set `demo` to a JS module path exporting `mount(el)` when a demo exists; leave `null` for a placeholder.
 3. The site is in Mongolian: write prose (summary, README, demo hints) in Mongolian, but keep technical terms, titles and tags in English. READMEs support `$…$` / `$$…$$` math (KaTeX) and highlighted code blocks.
 
