@@ -304,6 +304,8 @@ export function mount(root) {
   };
 
   function frame(now) {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+    if (root.closest('[data-offscreen]')) { last = now; raf = requestAnimationFrame(frame); return; }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     const css = getComputedStyle(root), fg = css.getPropertyValue('--fg').trim() || '#000', accent = css.getPropertyValue('--accent').trim() || '#2563eb';

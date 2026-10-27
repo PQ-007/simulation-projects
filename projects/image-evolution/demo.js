@@ -585,6 +585,8 @@ export function mount(root) {
   // ---------- main loop: as many generations as fit in ~12 ms per frame ----------
   let raf = 0, prev = performance.now();
   const frame = now => {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+    if (root.closest('[data-offscreen]')) { prev = now; raf = requestAnimationFrame(frame); return; }
     if (raceRunning && race && tab === 'race') { raceTick(performance.now() + 12); drawRace(); }
     if (running && ga && tab === 'evo') {
       elapsed += now - prev;

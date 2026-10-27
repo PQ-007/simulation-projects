@@ -234,6 +234,8 @@ export function mount(root) {
   }
 
   function frame() {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+    if (root.closest('[data-offscreen]')) { raf = requestAnimationFrame(frame); return; }
     if (anim && result) {
       if (shown < result.steps.length) for (let k = 0; k < +speed.value && shown < result.steps.length; k++) applyStep(shown++);
       else if (pathShown < result.path.length) pathShown = Math.min(result.path.length, pathShown + Math.max(1, Math.ceil(+speed.value / 4)));

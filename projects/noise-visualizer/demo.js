@@ -248,6 +248,8 @@ export function mount(root) {
   }
 
   function frame() {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again. (Sound keeps playing.)
+    if (root.closest('[data-offscreen]')) { raf = requestAnimationFrame(frame); return; }
     if (running && !time) { time = new Float32Array(analyser.fftSize); bins = new Float32Array(analyser.frequencyBinCount); }
     drawWave(); drawSpectrum(); drawGram();
     raf = requestAnimationFrame(frame);

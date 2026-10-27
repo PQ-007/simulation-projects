@@ -23,6 +23,13 @@ jobs:
         run: |
           mkdir -p _dist
           cp -r site projects index.html _dist/
+      # Every deploy gets its own ?v= (the commit hash), so browsers never mix cached old files with new ones.
+      # app.js passes this version on to demos, docs, real.json and images. Fails if the stamp didn't land.
+      - name: Stamp version
+        run: |
+          V=${GITHUB_SHA::8}
+          sed -i -E "s/\?v=[0-9A-Za-z]+/?v=$V/g" _dist/site/index.html
+          test "$(grep -c "?v=$V" _dist/site/index.html)" = 2
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -199,6 +199,8 @@ export function mountBot(box, { state, fire }) {
   }
 
   function frame(now) {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+    if (box.closest('[data-offscreen]')) { last = now; raf = requestAnimationFrame(frame); return; }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     if (!paused) update(dt);

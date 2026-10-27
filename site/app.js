@@ -17,6 +17,12 @@ const store = {
   set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
 };
 let projects = [];
+// Demos and live widgets animate every frame. While their box is not on screen (pane hidden by the view,
+// gallery dialog closed, scrolled away on a phone) it carries data-offscreen, and their loops skip the work.
+const onScreen = new IntersectionObserver(entries => entries.forEach(e => {
+  e.target.toggleAttribute('data-offscreen', !e.isIntersecting);
+  if (!e.target.isConnected) onScreen.unobserve(e.target);
+}));
 
 // $$…$$ and $…$ become placeholders that survive sanitizing; KaTeX fills them in afterwards.
 const escAttr = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -164,6 +170,7 @@ async function renderDemo(p, panel) {
     return;
   }
   const box = el('div', { class: 'demo' }, 'Ачаалж байна…');
+  onScreen.observe(box);
   panel.append(box);
   try {
     const mod = await import(versioned(p.demo));
@@ -349,6 +356,7 @@ async function renderReal(p, panel) {
     const extra = [];
     if (it.live && /^[\w-]+\.js$/.test(it.live)) {
       const stage = el('div', { class: 'live' }, 'Ачаалж байна…');
+      onScreen.observe(stage);
       media.append(stage);
       import(versioned(it.live, base)).then(m => { stage.replaceChildren(); m.mount(stage); }).catch(e => { stage.textContent = e.message; });
       if (isYt(it.youtube)) extra.push(ytButton(it.youtube, it.title));
@@ -397,6 +405,7 @@ function fillEmbeds(box, base) {
     } else if (kind === 'live' && /^[\w-]+\.js$/.test(src)) {
       // A small interactive widget from the project folder, mounted like a demo.
       const stage = el('div', { class: 'live' }, 'Ачаалж байна…');
+      onScreen.observe(stage);
       fig.prepend(stage);
       import(versioned(src, base)).then(mod => { stage.replaceChildren(); return mod.mount(stage); })
         .catch(e => { stage.textContent = `Widget ачаалж чадсангүй: ${e.message}`; });

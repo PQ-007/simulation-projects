@@ -133,6 +133,8 @@ export function mount(root) {
   speed.oninput = sync;
 
   function frame(now) {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+    if (root.closest('[data-offscreen]')) { last = now; raf = requestAnimationFrame(frame); return; }
     const dt = Math.min(0.25, (now - last) / 1000);
     last = now;
     if (running) {

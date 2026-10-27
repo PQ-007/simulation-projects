@@ -199,6 +199,8 @@ export function mount(root) {
   ro.observe(wrap);
 
   function frame(now) {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+    if (root.closest('[data-offscreen]')) { last = now; raf = requestAnimationFrame(frame); return; }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     if (flying && !drag) { ox += 90 * dt; oy += 25 * dt; render(); }

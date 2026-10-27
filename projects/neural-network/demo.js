@@ -216,7 +216,8 @@ export function mount(root) {
   lrIn.oninput = sync;
 
   let raf = 0;
-  const frame = () => { if (running) { trainSteps(+speedIn.value); render(); } raf = requestAnimationFrame(frame); };
+  // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+  const frame = () => { if (running && !root.closest('[data-offscreen]')) { trainSteps(+speedIn.value); render(); } raf = requestAnimationFrame(frame); };
   data = DATASETS[dsName](Math.random);
   hidden = [4, 3];
   build(); raf = requestAnimationFrame(frame);

@@ -293,6 +293,8 @@ export function mount(root) {
   // ---- main loop: fixed physics step, real-time ----
   const DT = 1 / 240; let acc = 0, last = performance.now(), raf = 0, frame = 0;
   function loop(now) {
+    // Not on screen (hidden pane, closed dialog, scrolled away): skip the work until it is visible again.
+    if (root.closest('[data-offscreen]')) { last = now; raf = requestAnimationFrame(loop); return; }
     acc += Math.min(0.05, (now - last) / 1000) * (slow.checked ? 0.25 : 1); last = now;
     while (acc >= DT) {
       const before = arm.tgt[plotJoint];
