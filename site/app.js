@@ -41,7 +41,7 @@ marked.use({ extensions: [
 ] });
 
 async function loadProjects() {
-  const r = await fetch('projects.json');
+  const r = await fetch(versioned('projects.json'));
   if (!r.ok) throw new Error('projects.json ачаалж чадсангүй');
   projects = await r.json();
 }

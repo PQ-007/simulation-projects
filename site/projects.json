@@ -191,5 +191,18 @@
     "status": "live",
     "demo": "../projects/robot-arm/demo.js",
     "thumb": "../projects/robot-arm/thumb.png"
+  },
+  {
+    "id": "image-evolution",
+    "title": "Genetic Algorithm: Image Evolution",
+    "summary": "100 өнгөт гурвалжин санамсаргүй эхэлж, selection, crossover, mutation-оор үе үеэр хувьсан Mona Lisa, CS лого болж хувирна.",
+    "tags": [
+      "genetic algorithm",
+      "evolution",
+      "optimization"
+    ],
+    "status": "live",
+    "demo": "../projects/image-evolution/demo.js",
+    "thumb": "../projects/image-evolution/thumb.png"
   }
 ]
