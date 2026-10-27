@@ -52,6 +52,24 @@ async function loadProjects() {
   projects = await r.json();
 }
 
+// ---- series: projects that build on each other ("series" in projects.json; steps in list order) ----
+const seriesOf = p => (p.series ? projects.filter(q => q.series === p.series) : null);
+// Open a project in the view that is on screen now (split/demo/docs/real), not always split.
+const goKeepView = (e, id) => { e.preventDefault(); location.hash = `#/p/${id}/${document.querySelector('.layout')?.dataset.view || 'split'}`; };
+
+// Under the project title: the series as numbered steps, this one highlighted.
+function seriesStrip(p) {
+  const steps = seriesOf(p);
+  if (!steps) return '';
+  return el('nav', { class: 'series-strip', 'aria-label': `Цуврал: ${p.series}` },
+    el('span', { class: 'series-name' }, `Цуврал · ${p.series}`),
+    ...steps.flatMap((q, i) => {
+      const attrs = { href: `#/p/${q.id}`, onclick: e => goKeepView(e, q.id) };
+      if (q === p) attrs['aria-current'] = 'step';
+      return [i ? el('span', { class: 'series-arrow', 'aria-hidden': 'true' }, '→') : '', el('a', attrs, `${i + 1}. ${q.title}`)];
+    }));
+}
+
 let filter = { q: '', tag: null };
 
 function renderHome() {
@@ -80,22 +98,27 @@ function renderHome() {
     el('div', { class: 'toolbar' },
       el('h1', {}, 'Simulations ', count),
       active,
-      el('label', { class: 'search' }, el('span', { class: 'search-icon', 'aria-hidden': 'true' }, '⌕'), search)),
+      el('label', { class: 'search' }, el('span', { class: 'search-icon', 'aria-hidden': 'true' }, '⌕'), search,
+        el('kbd', { title: '"/" дарж хайх' }, '/'))),
     grid);
   update();
 }
 
 // The title link stretches over the whole card; tags sit above it so they stay clickable as filters.
-const card = (p, setTag) => el('article', { class: 'card' },
-  el('div', { class: 'thumb' }, p.thumb ? el('img', { src: versioned(p.thumb), alt: '', loading: 'lazy' }) : ''),
-  el('div', { class: 'card-body' },
-    el('h2', {}, el('a', { href: `#/p/${p.id}` }, p.title),
-      p.status !== 'live' ? el('span', { class: `badge status-${p.status}` }, STATUS[p.status] || p.status) : ''),
-    el('p', {}, p.summary),
-    el('div', { class: 'card-foot' },
-      el('div', { class: 'card-tags' }, ...(p.tags || []).map(t =>
-        el('button', { class: 'tag', title: `"${t}"-ээр шүүх`, onclick: () => setTag(t) }, t))),
-      el('span', { class: 'open', 'aria-hidden': 'true' }, 'Нээх →'))));
+const card = (p, setTag) => {
+  const steps = seriesOf(p);
+  return el('article', { class: 'card' },
+    el('div', { class: 'thumb' }, p.thumb ? el('img', { src: versioned(p.thumb), alt: '', loading: 'lazy' }) : '',
+      steps ? el('span', { class: 'series-badge', title: `Цуврал: ${p.series}` }, `${p.series} · ${steps.indexOf(p) + 1}/${steps.length}`) : ''),
+    el('div', { class: 'card-body' },
+      el('h2', {}, el('a', { href: `#/p/${p.id}` }, p.title),
+        p.status !== 'live' ? el('span', { class: `badge status-${p.status}` }, STATUS[p.status] || p.status) : ''),
+      el('p', {}, p.summary),
+      el('div', { class: 'card-foot' },
+        el('div', { class: 'card-tags' }, ...(p.tags || []).map(t =>
+          el('button', { class: 'tag', title: `"${t}"-ээр шүүх`, onclick: () => setTag(t) }, t))),
+        el('span', { class: 'open', 'aria-hidden': 'true' }, '→'))));
+};
 
 const VIEWS = [['split', 'Split', '1'], ['demo', 'Demo', '2'], ['docs', 'Docs', '3'], ['real', 'Real world', '4']];
 // The project currently on screen, so switching views doesn't remount the demo.
@@ -149,7 +172,7 @@ function renderProject(id, view, sec) {
   app.className = 'project';
   app.replaceChildren(
     el('div', { class: 'proj-head' },
-      el('div', { class: 'proj-title' }, el('h1', {}, p.title), el('p', { class: 'lead' }, p.summary)),
+      el('div', { class: 'proj-title' }, el('h1', {}, p.title), el('p', { class: 'lead' }, p.summary), seriesStrip(p)),
       el('div', { class: 'proj-tools' },
         el('div', { class: 'seg', role: 'tablist', 'aria-label': 'Харагдац' }, ...buttons),
         el('div', { class: 'proj-nav' }, sibling(-1, '‹'), sibling(1, '›')))),
@@ -273,13 +296,16 @@ function copyLink(e, href) {
   }, () => { location.hash = href; });
 }
 
-// "Previous / next project" links at the end of the docs.
+// "Previous / next" links at the end of the docs: the neighbouring projects in the list, or within a series
+// the neighbouring steps.
 function pager(p) {
-  const at = projects.indexOf(p), n = projects.length;
-  const link = (q, dir) => el('a', { class: `pager-${dir}`, href: `#/p/${q.id}`, onclick: e => {
-    e.preventDefault(); location.hash = `#/p/${q.id}/${document.querySelector('.layout')?.dataset.view || 'split'}`;
-  } }, el('span', {}, dir === 'prev' ? '← Өмнөх' : 'Дараагийн →'), el('b', {}, q.title));
-  return el('nav', { class: 'pager', 'aria-label': 'Бусад project' }, link(projects[(at - 1 + n) % n], 'prev'), link(projects[(at + 1) % n], 'next'));
+  const at = projects.indexOf(p), n = projects.length, steps = seriesOf(p), k = steps ? steps.indexOf(p) : -1;
+  const link = (q, dir, label) => el('a', { class: `pager-${dir}`, href: `#/p/${q.id}`, onclick: e => goKeepView(e, q.id) },
+    el('span', {}, label), el('b', {}, q.title));
+  const prev = k > 0 ? link(steps[k - 1], 'prev', `← Өмнөх алхам · ${p.series}`) : link(projects[(at - 1 + n) % n], 'prev', '← Өмнөх');
+  const next = steps && k < steps.length - 1 ? link(steps[k + 1], 'next', `${p.series} · дараагийн алхам →`)
+    : link(projects[(at + 1) % n], 'next', steps ? `✓ ${p.series} дууслаа · дараагийн →` : 'Дараагийн →');
+  return el('nav', { class: 'pager', 'aria-label': 'Бусад project' }, prev, next);
 }
 
 // Real world: a gallery of things built on the project's algorithm, from <project>/real.json.
@@ -422,7 +448,9 @@ function renderNotFound() {
 
 // 1/2/3 switch views, Esc returns to split; ignored while typing or using demo controls.
 addEventListener('keydown', e => {
-  if (!current || e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input, textarea, select, [contenteditable]')) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input, textarea, select, [contenteditable]')) return;
+  // Home: "/" jumps to the search box.
+  if (!current) { if (e.key === '/' && document.querySelector('.search input')) { e.preventDefault(); document.querySelector('.search input').focus(); } return; }
   const v = e.key === 'Escape' ? 'split' : VIEWS.find(x => x[2] === e.key)?.[0];
   if (v) current.go(v);
 });

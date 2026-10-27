@@ -137,7 +137,8 @@
     ],
     "status": "live",
     "demo": "../projects/logic-gates/demo.js",
-    "thumb": "../projects/logic-gates/thumb.png"
+    "thumb": "../projects/logic-gates/thumb.png",
+    "series": "Компьютер бүтээх"
   },
   {
     "id": "memory-circuits",
@@ -150,7 +151,8 @@
     ],
     "status": "live",
     "demo": "../projects/memory-circuits/demo.js",
-    "thumb": "../projects/memory-circuits/thumb.png"
+    "thumb": "../projects/memory-circuits/thumb.png",
+    "series": "Компьютер бүтээх"
   },
   {
     "id": "tiny-cpu",
@@ -163,7 +165,8 @@
     ],
     "status": "live",
     "demo": "../projects/tiny-cpu/demo.js",
-    "thumb": "../projects/tiny-cpu/thumb.png"
+    "thumb": "../projects/tiny-cpu/thumb.png",
+    "series": "Компьютер бүтээх"
   },
   {
     "id": "neural-network",
