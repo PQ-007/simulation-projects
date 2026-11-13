@@ -207,5 +207,19 @@
     "status": "live",
     "demo": "../projects/image-evolution/demo.js",
     "thumb": "../projects/image-evolution/thumb.png"
+  },
+  {
+    "id": "verlet-physics",
+    "title": "Verlet Physics",
+    "summary": "Цэг бүр өмнөх байрлалаа санаж, stick-ууд уртаа барина — ингээд л даавуу, олс, ragdoll, зөөлөн бие бий болно. Чирж, хайчилж, тасал.",
+    "tags": [
+      "physics",
+      "Verlet",
+      "cloth",
+      "game dev"
+    ],
+    "status": "live",
+    "demo": "../projects/verlet-physics/demo.js",
+    "thumb": "../projects/verlet-physics/thumb.svg"
   }
 ]
